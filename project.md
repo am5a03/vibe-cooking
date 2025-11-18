@@ -1,4 +1,32 @@
-# Vibe Cooking
+# Project Context
+
+## Purpose
+
+**Vibe Cooking** is an AI-powered recipe inspiration platform designed to help home cooks discover what to prepare based on their available resources and dietary preferences.
+
+The application addresses two common challenges that home cooks face:
+
+1. **Ingredient-Based Recipe Discovery**: Home cooks often have ingredients in their refrigerators but lack inspiration for what to cook. Vibe Cooking allows users to input the ingredients they have on hand, and the application generates personalized recipe suggestions that make the best use of those ingredients.
+
+2. **Diet-Conscious Meal Planning**: Users can set their dietary habits and restrictions (such as calorie requirements, nutritional goals, allergen avoidances, or specific diet types like vegetarian, keto, etc.), and the application will generate recipe ideas that align with their health and lifestyle goals.
+
+By leveraging AI at the edge (Cloudflare AI), Vibe Cooking provides fast, personalized recipe recommendations that help reduce food waste and support healthier eating habits.
+
+## Features
+
+### Core Features
+- **Ingredient-to-Recipe Generator**: Input available ingredients and receive AI-generated recipe suggestions
+- **Diet-Based Recipe Planner**: Set dietary preferences and restrictions to get personalized meal ideas
+- **Smart Recipe Matching**: AI-powered algorithms to match ingredients and dietary requirements with suitable recipes
+
+### Planned Features
+- User authentication and profile management
+- Save favorite recipes and meal plans
+- Shopping list generation based on recipe selections
+- Nutritional information display for generated recipes
+- Recipe history and personalization based on user preferences
+- Image storage for recipe photos (via Cloudflare R2)
+- Multi-language support
 
 ## Tech Stack
 
@@ -34,36 +62,6 @@
   - [Wrangler](https://developers.cloudflare.com/workers/wrangler/) - Cloudflare development CLI
   - [Drizzle Kit](https://orm.drizzle.team/kit-docs/overview) - Database migrations toolkit
 - **ID Generation**: [@paralleldrive/cuid2](https://github.com/paralleldrive/cuid2) - Collision-resistant IDs
-
-## Project Overview
-
-**Vibe Cooking** is an AI-powered recipe inspiration platform designed to help home cooks discover what to prepare based on their available resources and dietary preferences.
-
-### Purpose
-
-The application addresses two common challenges that home cooks face:
-
-1. **Ingredient-Based Recipe Discovery**: Home cooks often have ingredients in their refrigerators but lack inspiration for what to cook. Vibe Cooking allows users to input the ingredients they have on hand, and the application generates personalized recipe suggestions that make the best use of those ingredients.
-
-2. **Diet-Conscious Meal Planning**: Users can set their dietary habits and restrictions (such as calorie requirements, nutritional goals, allergen avoidances, or specific diet types like vegetarian, keto, etc.), and the application will generate recipe ideas that align with their health and lifestyle goals.
-
-By leveraging AI at the edge (Cloudflare AI), Vibe Cooking provides fast, personalized recipe recommendations that help reduce food waste and support healthier eating habits.
-
-## Features
-
-### Core Features
-- **Ingredient-to-Recipe Generator**: Input available ingredients and receive AI-generated recipe suggestions
-- **Diet-Based Recipe Planner**: Set dietary preferences and restrictions to get personalized meal ideas
-- **Smart Recipe Matching**: AI-powered algorithms to match ingredients and dietary requirements with suitable recipes
-
-### Planned Features
-- User authentication and profile management
-- Save favorite recipes and meal plans
-- Shopping list generation based on recipe selections
-- Nutritional information display for generated recipes
-- Recipe history and personalization based on user preferences
-- Image storage for recipe photos (via Cloudflare R2)
-- Multi-language support
 
 ## Getting Started
 
