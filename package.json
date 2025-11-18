@@ -1,0 +1,49 @@
+{
+  "name": "vibe-cooking",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "wrangler:dev": "wrangler dev",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 execute DB --local --file=./drizzle/migrations/0000_initial.sql",
+    "db:migrate:remote": "wrangler d1 execute DB --remote --file=./drizzle/migrations/0000_initial.sql",
+    "db:studio:local": "drizzle-kit studio --port 3001",
+    "db:studio:remote": "drizzle-kit studio --port 3001",
+    "deploy": "next build && wrangler pages deploy .vercel/output/static"
+  },
+  "dependencies": {
+    "next": "^15.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "better-auth": "^1.0.7",
+    "drizzle-orm": "^0.36.4",
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "react-hook-form": "^7.53.2",
+    "@hookform/resolvers": "^3.9.1",
+    "zod": "^3.23.8",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4",
+    "class-variance-authority": "^0.7.0",
+    "lucide-react": "^0.454.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.4.49",
+    "drizzle-kit": "^0.29.1",
+    "wrangler": "^3.95.0",
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/next-on-pages": "^1.13.6"
+  }
+}
