@@ -1,0 +1,32 @@
+{
+  "name": "vibe-cooking",
+  "compatibility_date": "2024-12-01",
+  "pages_build_output_dir": ".vercel/output/static",
+
+  // D1 Database binding
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vibe-cooking-db",
+      "database_id": "your-database-id-here"
+    }
+  ],
+
+  // R2 Storage binding
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "vibe-cooking-storage"
+    }
+  ],
+
+  // AI binding for edge inference
+  "ai": {
+    "binding": "AI"
+  },
+
+  // Environment variables
+  "vars": {
+    "ENVIRONMENT": "development"
+  }
+}
