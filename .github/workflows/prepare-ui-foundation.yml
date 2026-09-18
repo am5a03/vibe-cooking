@@ -1,5 +1,5 @@
-# Temporary bootstrap workflow; removed before the final Phase 1 pull request.
-name: Prepare UI foundation dependencies
+# Temporary preparation workflow. Deletes itself from the branch before the PR.
+name: Prepare and verify UI foundation
 on:
   push:
     branches: ['chore/shadcn-phase-1-foundation']
@@ -7,12 +7,15 @@ on:
 permissions:
   contents: read
 jobs:
-  lockfile:
+  foundation:
     if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/chore/shadcn-phase-1-foundation'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     permissions:
       contents: write
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,14 +23,70 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Resolve only the foundation UI dependencies
-        run: npm install --package-lock-only --ignore-scripts --save-exact --no-audit --no-fund tailwind-merge@3 tw-animate-css@1
-      - name: Commit the npm-generated manifest and lockfile to this branch only
+      - name: Install the npm-generated dependency lock
+        id: install
+        run: npm ci
+      - name: Check preparation script syntax
+        run: node --check scripts/_prepare-ui-foundation.mjs
+      - name: Baseline typecheck, lint, API and migration tests before styling changes
+        id: baseline_checks
+        continue-on-error: true
+        run: npm run typecheck && npm run lint && npm test
+      - name: Baseline Worker build without deployment
+        id: baseline_build
+        continue-on-error: true
+        run: npm run build:worker
+      - name: Install test browser
+        id: browser
+        run: npx playwright install --with-deps chromium
+      - name: Baseline browser workflow on disposable local D1
+        if: steps.baseline_build.outcome == 'success'
+        continue-on-error: true
+        run: npm run test:browser
+      - name: Preserve baseline screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-phase1-before
+          path: test-results/
+          if-no-files-found: ignore
+      - name: Apply foundation and commit only reviewed Phase 1 paths
+        id: apply
         run: |
-          git diff --stat -- package.json package-lock.json
-          if git diff --quiet -- package.json package-lock.json; then exit 0; fi
+          node scripts/_prepare-ui-foundation.mjs
+          rm scripts/_prepare-ui-foundation.mjs .github/workflows/prepare-ui-foundation.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json package-lock.json
-          git commit -m 'chore(ui): align Tailwind 4 merge and animation dependencies'
+          git add -A -- app/globals.css app/kitchen.css app/kitchen-discovery.css app/page.tsx components.json tailwind.config.ts docs/UI.md tests/ui-foundation.test.mjs tests/browser/ui-foundation.spec.ts scripts/_prepare-ui-foundation.mjs .github/workflows/prepare-ui-foundation.yml
+          git diff --cached --stat
+          git commit -m 'feat(ui): establish Tailwind 4 shadcn theme and isolate legacy styles'
           git push origin HEAD:refs/heads/chore/shadcn-phase-1-foundation
+      - name: Typecheck foundation
+        if: ${{ !cancelled() && steps.apply.outcome == 'success' }}
+        run: npm run typecheck
+      - name: Lint foundation
+        if: ${{ !cancelled() && steps.apply.outcome == 'success' }}
+        run: npm run lint
+      - name: Test API, sessions, migrations and UI foundation compilation
+        if: ${{ !cancelled() && steps.apply.outcome == 'success' }}
+        run: npm test
+      - name: Check Drizzle migration metadata
+        if: ${{ !cancelled() && steps.apply.outcome == 'success' }}
+        run: npm run db:migrations:check
+      - name: Build foundation for Workers without deployment
+        id: build
+        if: ${{ !cancelled() && steps.apply.outcome == 'success' }}
+        run: npm run build:worker
+      - name: Validate Worker bundle without deploying
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx wrangler deploy --dry-run
+      - name: Browser regression checks on disposable local D1
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.browser.outcome == 'success' }}
+        run: npm run test:browser
+      - name: Preserve Phase 1 screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-phase1-after
+          path: test-results/
+          if-no-files-found: ignore
