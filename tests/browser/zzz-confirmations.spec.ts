@@ -40,11 +40,26 @@ test.beforeAll(async ({ browser, baseURL }) => {
 });
 test.beforeEach(async ({ context, page }) => {
   await context.addCookies(cookies);
+  const session = await context.request.get("/api/session");
+  expect(session.ok(), "The shared screen-test session must remain valid.").toBe(true);
+  expect((await session.json()).data.authenticated).toBe(true);
   page.on("dialog", async (dialog) => {
     // App confirmations must no longer use native dialogs. Keep native unload warnings.
     expect(dialog.type()).toBe("beforeunload");
     await dialog.dismiss();
   });
+});
+test.afterEach(async ({ context }) => {
+  // The real re-unlock flow revokes its previous cookie. Carry the verified
+  // replacement into the next serial test, including a restarted worker.
+  // Do not manufacture sessions, weaken throttling, or log cookie values.
+  const session = await context.request.get("/api/session");
+  expect(session.ok(), "Could not verify the session after the confirmation workflow.").toBe(true);
+  if (!(await session.json()).data.authenticated) return;
+  const current = await context.cookies();
+  expect(current.some((cookie) => cookie.httpOnly)).toBe(true);
+  cookies = current;
+  writeFileSync(cookiePath, JSON.stringify(current), { mode: 0o600 });
 });
 
 async function fixture(request: APIRequestContext) {
