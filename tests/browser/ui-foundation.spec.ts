@@ -47,7 +47,7 @@ test('UI foundation: legacy parity, primitive isolation and root portal theme', 
     await expect(page.locator('#portal-fixture')).toHaveCSS('color', 'rgb(40, 62, 48)');
     await expect(page.locator('#portal-fixture')).toHaveCSS('font-family', /Arial/);
     await expect(page.locator('#hidden-region')).toHaveCSS('display', 'none');
-    await page.screenshot({ path: testInfo.outputPath('foundation-' + width + '.png'), fullPage: true });
+    await page.screenshot({ path: testInfo.outputPath(`foundation-${width}.png`), fullPage: true });
   }
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
   await expect(page.locator('#portal-fixture')).toHaveCSS('background-color', 'rgb(255, 254, 249)');
