@@ -32,7 +32,7 @@ test("Button forwards native button semantics and caller utility overrides", () 
   assert.doesNotMatch(html, /\bh-9\b/);
 });
 
-test("transitional Field keeps native control props and an explicit sibling shadcn label", () => {
+test("Field keeps native control props and an explicit sibling shadcn label", () => {
   const html = render(
     Field,
     { label: "Portions", wide: true },
@@ -42,14 +42,15 @@ test("transitional Field keeps native control props and an explicit sibling shad
       createElement("option", { value: "2" }, "Two portions"),
     ),
   );
-  assert.match(html, /^<div class="field wide">/);
-  assert.match(html, /<label[^>]*data-slot="label"/);
+  assert.match(html, /data-slot="field"/);
+  assert.match(html, /col-span-full/);
+  assert.match(html, /<label[^>]*data-slot="field-label"/);
   assert.match(html, /for="portions"/);
   assert.match(html, />Portions<\/label><select/);
   assert.match(html, /<select[^>]*id="portions"/);
   assert.match(html, /multiple=""/);
   assert.match(html, /required=""/);
-  assert.doesNotMatch(html, /data-slot="field"/);
+  assert.doesNotMatch(html, /class="field wide"/);
 });
 
 test("shared feedback preserves a single alert and a text status with decorative skeletons", () => {

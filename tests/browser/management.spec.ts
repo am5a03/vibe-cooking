@@ -12,8 +12,9 @@ test('create an ingredient and recipe, resolve stale edits, and retain a draft t
   await page.getByRole('button', { name: 'All recipes', exact: true }).click();
   await page.getByRole('button', { name: 'Add a recipe', exact: true }).click();
   await page.getByLabel('Recipe title', { exact: true }).fill('A browser-created recipe');
-  const details = page.locator('.ingredient-creator');
-  if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) await details.locator('summary').click();
+  const creator = page.getByRole('button', { name: 'Add an ingredient to your catalogue', exact: true });
+  if ((await creator.getAttribute('aria-expanded')) !== 'true') await creator.click();
+  await expect(creator).toHaveAttribute('aria-expanded', 'true');
   await page.getByLabel('New ingredient name', { exact: true }).fill('Test quinoa');
   await page.getByRole('button', { name: 'Create ingredient', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Added Test quinoa' })).toBeVisible();
