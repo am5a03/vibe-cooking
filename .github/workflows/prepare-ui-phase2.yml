@@ -1,0 +1,71 @@
+# Temporary branch-only preparation; removed before the final pull request.
+name: Prepare UI phase 2
+on:
+  push:
+    branches: ['feat/shadcn-phase-2-shell']
+    paths: ['.github/workflows/prepare-ui-phase2.yml']
+permissions:
+  contents: read
+jobs:
+  primitives:
+    if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/feat/shadcn-phase-2-shell'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Baseline static and API checks
+        run: npm run typecheck && npm run lint && npm test
+      - name: Baseline Worker build without deployment
+        run: npm run build:worker
+      - run: npx playwright install --with-deps chromium
+      - name: Capture baseline unlock screens
+        run: |
+          cat > tests/browser/phase2-baseline.spec.ts <<'EOF'
+          import { test, expect } from '@playwright/test';
+          test('Phase 2 unlock baseline', async ({ page }) => {
+            await page.goto('/');
+            await expect(page.getByLabel('Private kitchen key')).toBeVisible();
+            for (const width of [1360, 768, 390, 320]) {
+              await page.setViewportSize({ width, height: 960 });
+              await page.screenshot({ path: `test-results/unlock-before-${width}.png`, fullPage: true });
+            }
+          });
+          EOF
+          npm run test:browser
+          rm tests/browser/phase2-baseline.spec.ts
+      - name: Preserve baseline screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-phase2-before
+          path: test-results/
+          if-no-files-found: ignore
+      - name: Generate only the required New York components
+        run: |
+          version="$(npm view shadcn version)"
+          echo "Using shadcn CLI ${version} with the existing New York configuration"
+          npx --yes "shadcn@${version}" add button card field input alert skeleton badge --yes
+          git diff --exit-code -- app/globals.css components.json lib/utils.ts
+          mkdir -p components/ui
+          curl --fail --silent --show-error https://raw.githubusercontent.com/shadcn-ui/ui/main/LICENSE.md -o components/ui/LICENSE.md
+          printf 'Generated with shadcn@%s add button card field input alert skeleton badge --yes\nConfiguration: new-york, Tailwind 4, React 19, Radix-backed primitives.\nSource: https://ui.shadcn.com/ ; MIT license: ./LICENSE.md\n' "$version" > components/ui/PROVENANCE.md
+      - name: Remove preparation workflow and commit generated source
+        run: |
+          rm .github/workflows/prepare-ui-phase2.yml
+          git add -A -- components/ui package.json package-lock.json .github/workflows/prepare-ui-phase2.yml
+          git diff --cached --stat
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat(ui): add reviewed shadcn primitives for the kitchen shell'
+          git push origin HEAD:refs/heads/feat/shadcn-phase-2-shell
