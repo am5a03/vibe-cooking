@@ -88,6 +88,9 @@ test("dirty navigation keeps the committed route, traps focus, and supports canc
     await destination.click();
     const dialog = page.getByRole("alertdialog", { name: "Leave without saving?" });
     await expect(dialog).toBeVisible();
+    // Review the settled surface, not an intermediate translucent entrance frame.
+    await expect(dialog).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-slot="alert-dialog-overlay"]')).toHaveCSS("opacity", "1");
     await expect(page).toHaveURL(new RegExp(`#edit/${id}$`));
     await expect(dialog).toHaveCSS("background-color", "rgb(255, 254, 249)");
     expect(await dialog.evaluate((element) => element.closest(".kitchen-app") === null)).toBe(true);
@@ -104,7 +107,7 @@ test("dirty navigation keeps the committed route, traps focus, and supports canc
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
-    await page.screenshot({ path: info.outputPath(`confirmation-${width}.png`), fullPage: false });
+    await page.screenshot({ path: info.outputPath(`confirmation-${width}.png`), fullPage: false, animations: "disabled" });
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(destination).toBeFocused();
