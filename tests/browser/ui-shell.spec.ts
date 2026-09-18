@@ -5,7 +5,9 @@ if (!key) throw new Error("Use npm run test:browser with isolated local D1.");
 
 // These exercise real rendered components. Only the failure/busy responses are
 // intercepted; successful unlock, navigation and relocking use the local Worker.
-test("shadcn unlock: responsive card, labelled native input and visible keyboard focus", async ({ page }) => {
+test("shadcn unlock: responsive card, labelled native input and visible keyboard focus", async ({
+  page,
+}) => {
   await page.goto("/");
   const input = page.getByLabel("Private kitchen key", { exact: true });
   await expect(input).toBeVisible();
@@ -27,7 +29,9 @@ test("shadcn unlock: responsive card, labelled native input and visible keyboard
     await expect(input).toHaveCSS("height", "44px");
     await expect(input).toHaveCSS("font-size", width < 768 ? "16px" : "15px");
     await expect(card).toHaveCSS("background-color", "rgb(255, 254, 249)");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
     await page.screenshot({ path: `test-results/unlock-after-${width}.png`, fullPage: true });
   }
   await input.focus();
@@ -41,7 +45,9 @@ test("shadcn unlock: responsive card, labelled native input and visible keyboard
   await expect(card.getByText("npm run db:migrate:local", { exact: true })).toBeVisible();
 });
 
-test("unlock retains required validation, guards repeated submission, announces errors and clears the key", async ({ page }) => {
+test("unlock retains required validation, guards repeated submission, announces errors and clears the key", async ({
+  page,
+}) => {
   let posts = 0;
   let pending: Route | undefined;
   await page.route("**/api/session", async (route) => {
@@ -54,7 +60,9 @@ test("unlock retains required validation, guards repeated submission, announces 
   const input = page.getByLabel("Private kitchen key", { exact: true });
   await expect(input).toBeVisible();
   await page.getByRole("button", { name: "Unlock my kitchen" }).click();
-  expect(await input.evaluate((element: HTMLInputElement) => element.validity.valueMissing)).toBe(true);
+  expect(await input.evaluate((element: HTMLInputElement) => element.validity.valueMissing)).toBe(
+    true,
+  );
   expect(posts).toBe(0);
   await input.fill("x".repeat(32));
   await input.press("Enter");
@@ -64,12 +72,22 @@ test("unlock retains required validation, guards repeated submission, announces 
     await expect(input).toBeDisabled();
     await expect(page.locator("form")).toHaveAttribute("aria-busy", "true");
     await expect(page.getByRole("status")).toHaveText("Unlocking your kitchen…");
-    await page.locator("form").evaluate((form: HTMLFormElement) => { form.requestSubmit(); form.requestSubmit(); });
+    await page.locator("form").evaluate((form: HTMLFormElement) => {
+      form.requestSubmit();
+      form.requestSubmit();
+    });
     expect(posts).toBe(1);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(page.locator("form svg.animate-spin")).toHaveCSS("animation-name", "none");
   } finally {
-    if (pending) await pending.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: { code: "unauthorized", message: "That kitchen key was not accepted." } }) });
+    if (pending)
+      await pending.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "unauthorized", message: "That kitchen key was not accepted." },
+        }),
+      });
   }
   // Next also renders a global route-announcer alert. Assert only form feedback.
   const alert = page.getByRole("region", { name: "Come on in." }).getByRole("alert");
@@ -87,10 +105,14 @@ test("unlock retains required validation, guards repeated submission, announces 
   await input.fill(key);
   await input.press("Enter");
   await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
-  expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
+  expect(
+    await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+  ).toEqual({ local: 0, session: 0 });
 });
 
-test("shell keeps navigation, native field labels and dirty-route protection through lock and expiry", async ({ page }) => {
+test("shell keeps navigation, native field labels and dirty-route protection through lock and expiry", async ({
+  page,
+}) => {
   await page.goto("/");
   await page.getByLabel("Private kitchen key").fill(key);
   await page.getByRole("button", { name: "Unlock my kitchen" }).click();
@@ -99,15 +121,24 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   for (const width of [1360, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 960 });
     await nav.getByRole("button", { name: "Preferences", exact: true }).click();
-    await expect(nav.getByRole("button", { name: "Preferences", exact: true })).toHaveAttribute("aria-current", "page");
-    await expect(nav.getByRole("button", { name: "Discover", exact: true })).not.toHaveAttribute("aria-current", "page");
+    await expect(nav.getByRole("button", { name: "Preferences", exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(nav.getByRole("button", { name: "Discover", exact: true })).not.toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     const portions = page.getByLabel("Breakfast portions", { exact: true });
     await expect(portions).toBeVisible();
-    await expect(portions).toHaveCSS("min-height", "43px");
+    await expect(portions).toHaveAttribute("data-slot", "input");
+    await expect(portions).toHaveCSS("height", width < 768 ? "44px" : "40px");
     const linkedLabel = page.locator("label").filter({ hasText: /^Breakfast portions$/ });
-    await expect(linkedLabel).toHaveAttribute("data-slot", "label");
+    await expect(linkedLabel).toHaveAttribute("data-slot", "field-label");
     for (const button of await nav.getByRole("button").all()) await expect(button).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
     await page.screenshot({ path: `test-results/shell-after-${width}.png`, fullPage: true });
   }
   await nav.getByRole("button", { name: "All recipes", exact: true }).click();
@@ -136,13 +167,20 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
 
 test("shared loading uses decorative skeletons and an announced status", async ({ page }) => {
   let pending: Route | undefined;
-  await page.route("**/api/session", (route) => { pending = route; });
+  await page.route("**/api/session", (route) => {
+    pending = route;
+  });
   await page.goto("/");
   await expect(page.getByRole("status")).toHaveText("Opening your kitchen…");
   await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(3);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const skeleton of await page.locator('[data-slot="skeleton"]').all()) await expect(skeleton).toHaveCSS("animation-name", "none");
+  for (const skeleton of await page.locator('[data-slot="skeleton"]').all())
+    await expect(skeleton).toHaveCSS("animation-name", "none");
   await expect.poll(() => Boolean(pending)).toBe(true);
-  await pending?.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: { authenticated: false } }) });
+  await pending?.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ data: { authenticated: false } }),
+  });
   await expect(page.getByLabel("Private kitchen key")).toBeVisible();
 });

@@ -1,93 +1,94 @@
-# Kitchen UI architecture
+# Kitchen UI architecture (through Phase 3)
 
-## Migration status
+The UI uses shadcn/ui New York components backed by Radix, with the original warm
+kitchen theme. Phase 1 established the theme and CSS boundary. Phase 2 migrated
+unlock, navigation and shared feedback. Phase 3 migrates browsing, discovery,
+recipe details, preferences, the editor and variation comparisons.
 
-Phase 1 established the Tailwind 4 theme and legacy CSS coexistence boundary.
-Phase 2 uses actual shadcn primitives for the unlock screen, application header,
-shell actions, shared error/loading feedback and shared field labels. Recipe
-browsing/detail/editor/preferences/remix compositions remain otherwise unchanged.
-No new route, authentication model, database migration or dark-mode feature is added.
+API calls, recipe snapshots, authored serving profiles, editor row identities,
+revision tags, dirty-edit guards and session handling remain owned by the existing
+application/domain code. This is not a routing or form-state rewrite. Native
+confirmation dialogs are intentionally retained for Phase 4.
 
-## Configuration and ownership
+## Ownership
 
-- Tailwind 4 is configured in `app/globals.css` with `@theme inline`.
-  There is no `tailwind.config.ts` or `@config` bridge.
-- `components.json` retains New York, TypeScript, RSC, CSS variables and the existing
-  aliases. `tailwind.config` is intentionally empty for Tailwind 4.
-- `tailwind-merge` and `tw-animate-css` remain pinned to the Phase 1 versions.
-  Additional Radix dependencies come from the generated components; use `npm ci`.
-- `components/ui` contains shadcn source, its upstream MIT license and generation
-  provenance. Keep this layer independent of recipes, API calls and session state.
-- `components/kitchen/unlock.tsx` composes Card, Badge, Field, Input and Button.
-- `components/kitchen/kitchen-header.tsx` is a controlled presentation component.
-  Studio owns navigation, session state and dirty-edit decisions. The header keeps
-  the four existing destinations, uses `aria-current="page"`, and is ordinary
-  navigation, not a tablist or an application menu. On small screens it wraps into
-  two rows rather than adding a drawer or hiding destinations.
-- `components/kitchen/shared.tsx` contains product feedback and a transitional
-  Field adapter. Its Label is a shadcn primitive, but the wrapper deliberately has
-  no data-slot. Native recipe form controls retain their legacy styles and behavior
-  until their complete compositions are migrated in Phase 3.
+- `components/ui`: reviewed, source-owned shadcn primitives. No kitchen data or API
+  calls belong here. Keep `data-slot`, accessible props and caller `className`
+  merging. See `PROVENANCE.md` and the retained upstream license.
+- `components/kitchen`: screens and product compositions. `RecipeCard` is shared
+  by discovery, the catalogue and saved snapshots. Its caller supplies the exact
+  recipe and authored serving; the card performs no scaling or data fetching.
+- `DishArt` is a self-contained product illustration using utilities. It works
+  inside a Card without relying on the excluded legacy illustration selectors.
+- `Notice` composes Alert/AlertDescription for non-urgent information, with the
+  alert role removed. `ErrorBox` is the live error component. `Loading` keeps a
+  native output status and decorative, hidden-from-assistive-tech skeletons.
+- `lib/kitchen`: domain logic, validation, API access and the stable editor model.
 
-## Theme
+## Theme and configuration
 
-Semantic values live on `:root`, including colors inherited by future body-mounted
-portals. Colors are complete CSS values; do not wrap `var(--primary)` in `hsl()`.
-Fonts remain Arial/Helvetica for controls and Georgia/Times New Roman for product
-headings. Product headings must opt into `font-serif` inside primitive subtrees.
+Tailwind 4 is CSS-first in `app/globals.css`, using `@theme inline`.
+`components.json` retains New York, TypeScript, RSC, CSS variables and existing
+aliases. Its `tailwind.config` field is intentionally empty. Use shadcn `add`,
+not `init`, and do not replace the kitchen palette with generated defaults.
 
-The warm paper background (#f8f6ee), card surface (#fffef9), green primary (#305e42),
-ink (#283e30), muted text (#687362), borders and focus-ring color are retained.
-`--muted` is a surface; use `text-muted-foreground` for subdued text.
-`--kitchen-accent` is decorative terracotta; `--accent` is the interactive surface.
-The temporary legacy aliases are removed only when their last consumer migrates.
-The kitchen stays light-only regardless of OS preference.
+Semantic values live on `:root`, including future body-mounted overlays. They are
+complete CSS colors; never wrap `var(--primary)` in `hsl()`. Paper is `#f8f6ee`,
+card surfaces `#fffef9`, primary green `#305e42`, and ink `#283e30`. Controls use
+Arial/Helvetica; product headings use Georgia/Times New Roman.
 
-## CSS coexistence contract
+`--muted` is a surface; `--muted-foreground` is text. The decorative terracotta
+`--kitchen-accent` is distinct from the interactive `--accent`. The app remains
+light-only, regardless of OS preference. Dependencies stay lockfile-controlled;
+use `npm ci`. Phase 3 adds no new package family or framework upgrade.
 
-There is one stylesheet entry point: `app/layout.tsx` imports `app/globals.css`.
-Do not import `kitchen.css` directly from routes or components.
-The cascade is `theme -> base -> legacy -> components -> utilities`.
-`kitchen-discovery.css` is imported before `kitchen.css`, both in the legacy layer.
+## CSS coexistence
 
-Legacy selectors are scoped to `.kitchen-app`. The zero-specificity guard
-`:not(:where([data-slot], [data-slot] *))` excludes shadcn roots and descendants,
-including legacy font shorthands, min-height, and important declarations.
-Keep generated data-slot attributes; do not add them to unrelated product markup.
-A primitive subtree opts out as a whole: migrate its children together instead of
-putting old `.field`/`.button` markup inside a new Card and expecting legacy styles.
+There is one stylesheet entry point: the root layout imports `app/globals.css`.
+The cascade remains `theme -> base -> legacy -> components -> utilities`, with
+legacy discovery CSS loaded before legacy kitchen CSS.
 
-Hidden/session protection and reduced-motion rules cross this boundary. Global
-reduced-motion protection also covers body-mounted primitives. Phase 2 introduces
-no portalled overlays. Native confirmation dialogs and browser-unload warnings stay
-in place; custom dialog lifecycle/session-expiry handling belongs to Phase 4.
+Legacy selectors are kitchen-scoped and exclude `[data-slot]` roots and their
+subtrees using a zero-specificity guard. Migrated Card/Field compositions must
+style all children explicitly; old `.panel`, `.field` or `.button` styles will not
+work inside them. Do not add `data-slot` to unrelated product markup to bypass CSS.
 
-## Interaction contracts
+The remaining `recipe-card`, `taste-row`, `remix-option`, `review-badge`,
+`comparison-meals`, `ingredient-check` and `diff-*` class names in migrated
+compositions are compatibility hooks, not the source of their styling. Keep the
+legacy files for the still-unmigrated shell/fixtures until the Phase 5 cleanup.
+Hidden-content/session protections and reduced-motion rules deliberately cross
+the CSS boundary. Phase 3 adds no body-mounted overlays.
 
-- Every application Button specifies `type`; form actions use `type="submit"`.
-- Unlock keeps the password input's required/min/max length constraints and native
-  keyboard submission. Pending requests disable controls and have a ref-based
-  duplicate-submission guard. Failures announce one Alert, associate it with the
-  input, clear the key and return focus to the field. No browser storage is used.
-- Explicit lock still asks before discarding dirty edits. Expiry still hides the
-  mounted editor and re-unlock restores the draft. Studio's hash routing, dirty
-  guards and API calls are unchanged by the presentation extraction.
-- Shared Field labels remain siblings with matching `htmlFor`/`id`. In particular,
-  option text in selects must not become part of the accessible field name.
-- Loading skeletons are decorative; one polite live status provides the text.
-- Use semantic colors and `cn()` overrides, not additional global control rules.
+## Control contracts
 
-## Adding/updating primitives
-
-Use `shadcn add`, not `init`, with the existing New York configuration. Review the
-source, data-slot attributes, Radix dependencies and lockfile. Do not mix primitive
-families or overwrite the kitchen theme. Add only components used by the current
-migration. Preserve local adjustments and the upstream license when updating.
-See `components/ui/PROVENANCE.md` for the actual generation command/version.
+- Kitchen `Field` now composes shadcn Field/FieldLabel. It preserves a child's
+  existing ID or assigns one with `useId`, keeping the label a sibling so select
+  option text is not included in its accessible name. `wide` spans all grid columns.
+- Text fields and textareas retain native `required`, ranges, patterns, maximum
+  lengths, rows and change handlers. Editor textareas use fixed field sizing with
+  user-controlled vertical resizing rather than implicit content-sized growth.
+- `NativeSelect` retains native events, options, validation and mobile pickers.
+  Multiple selects and numeric `size` values render real listboxes with no dropdown
+  chevron. The generated `sm`/`default` sizes remain supported. Wrappers are fluid
+  and min-width-safe; controls use 16px text on small screens.
+- Map Checkbox changes using `value === true`, not truthiness (Radix also supports
+  an indeterminate value). Composite controls receive explicit busy/disabled props.
+  Preferences still make Love and Exclude mutually exclusive.
+- Portion-profile buttons remain pressed-state selectors, without changing the
+  editor model or mounting independent copies of the fields. `EDIT_KEY` remains
+  the key for editable rows, never an array index or serialized recipe property.
+- New portion profiles copy authored values unchanged and block saving until the
+  existing review acknowledgement is satisfied. No automated time scaling.
+- Collapsible is used for optional ingredient creation and complete-step
+  comparisons. Product state remains in the parent; closing an optional panel
+  does not discard its controlled field values.
+- Buttons have explicit types. Informational notices must not impersonate urgent
+  validation errors. Save statuses remain native output elements.
 
 ## Verification
 
-```bash
+```sh
 npm run typecheck
 npm run lint
 npm test
@@ -98,20 +99,13 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-The browser runner creates disposable local D1 and a temporary test token; never
-point it at production. Existing cookbook, review, revision-conflict and session
-regression tests remain active. `ui-foundation.test.mjs` and
-`browser/ui-foundation.spec.ts` retain the Phase 1 CSS contract. The latter now
-waits for the accessible password input instead of an obsolete card CSS class.
+Browser checks run on disposable local D1 through the existing runner, not the
+user's database. Existing saved-version, notes, conflicts, expiry and remix tests
+remain, with Phase 2 control-size/label assertions updated to the migrated UI.
+New tests cover all six feature screens at 320/390/768/1360px, authored portions,
+checkboxes, multi-select, editor row identity and review guards, failed-save drafts,
+mutual exclusion and busy disabling, catalogue paging, empty state and retry.
 
-`ui-shell.test.mjs` tests rendered primitive and shared-component semantics.
-`browser/ui-shell.spec.ts` exercises the actual unlock/header components at 320,
-390, 768 and 1360px, keyboard focus/submission, required validation, busy/error
-feedback, key clearing, native label compatibility, dirty navigation/lock guards,
-expiry draft retention, and reduced motion. Failure/busy responses are intercepted;
-successful sessions and existing product workflows use the real local Worker.
-
-CI retains screenshots in `kitchen-browser-results`. Review unlock, navigation,
-errors and loading on mobile and desktop, then smoke-test recipe editing/saving,
-preferences and remix previews. This phase intentionally changes the migrated
-controls and narrow-screen header, not the rest of the product layouts.
+CI keeps screenshots in `kitchen-browser-results`. The migration does not claim
+pixel-identical screenshots or comprehensive assistive-technology certification.
+Manual review should include long text, mobile layouts and the complete editor.
