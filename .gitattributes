@@ -1,0 +1,2 @@
+# D1's remote SQL handling is sensitive to trigger line endings.
+drizzle/migrations/*.sql text eol=lf
