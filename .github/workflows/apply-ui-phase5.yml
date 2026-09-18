@@ -1,0 +1,79 @@
+# Temporary source-transfer workflow, removed before committing the final cleanup.
+name: Apply reviewed UI phase 5
+on:
+  push:
+    branches: ['chore/shadcn-phase-5-cleanup']
+    paths: ['.github/workflows/apply-ui-phase5.yml']
+permissions:
+  contents: read
+jobs:
+  apply:
+    if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/chore/shadcn-phase-5-cleanup'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/shadcn-phase-5-cleanup
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Verify all source digests before applying the reviewed cleanup
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, writeFileSync, rmSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { brotliDecompressSync } from 'node:zlib';
+          const hash = (value) => createHash('sha256').update(value).digest('hex');
+          const compressed = Buffer.from(readFileSync('scripts/_phase5.b64', 'utf8').trim(), 'base64');
+          assert.equal(hash(compressed), '13da175ce65d0320e2af63d7fc56cf5dc80bacd14598dc7b6e93735691a91995');
+          const bundle = JSON.parse(brotliDecompressSync(compressed).toString('utf8'));
+          assert.equal(bundle.base, '7c52188ec4a5961232742191103620e18bb606b7');
+          const allowed = new Set([
+            '.github/workflows/prepare-ui-phase5.yml', 'README.md', 'app/globals.css',
+            'app/kitchen-discovery.css', 'app/kitchen.css', 'components/kitchen/confirmation.tsx',
+            'components/kitchen/dish-art.tsx', 'components/kitchen/preferences.tsx',
+            'components/kitchen/recipe-card.tsx', 'components/kitchen/recipe.tsx',
+            'components/kitchen/remixes.tsx', 'components/kitchen/studio.tsx',
+            'components/kitchen/unlock.tsx', 'docs/UI.md', 'tests/browser/kitchen.spec.ts',
+            'tests/browser/ui-foundation.spec.ts', 'tests/browser/ui-shell.spec.ts',
+            'tests/browser/z-discovery.spec.ts', 'tests/browser/zz-ui-recipes.spec.ts',
+            'tests/ui-foundation.test.mjs',
+          ]);
+          assert.equal(bundle.files.length, allowed.size);
+          const ready = [];
+          for (const file of bundle.files) {
+            assert.ok(allowed.delete(file.path), `Unexpected or repeated path: ${file.path}`);
+            const source = readFileSync(file.path, 'utf8');
+            assert.equal(hash(source), file.before, `Source changed: ${file.path}`);
+            if (file.after === null) { ready.push([file.path, null]); continue; }
+            const lines = source.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+            for (const [start, end, text] of [...file.edits].sort((a, b) => b[0] - a[0])) {
+              assert.ok(Number.isInteger(start) && Number.isInteger(end) && start >= 0 && end >= start && end <= lines.length);
+              lines.splice(start, end - start, text);
+            }
+            const output = lines.join('');
+            assert.equal(hash(output), file.after, `Output mismatch: ${file.path}`);
+            ready.push([file.path, output]);
+          }
+          assert.equal(allowed.size, 0);
+          for (const [path, output] of ready) {
+            if (output === null) rmSync(path); else writeFileSync(path, output);
+          }
+          console.log(`Verified and applied ${ready.length} reviewed paths.`);
+          NODE
+          rm scripts/_phase5.b64 .github/workflows/apply-ui-phase5.yml
+      - name: Verify cleanup before committing
+        run: npm run typecheck && npm run lint && npm test && git diff --check
+      - name: Commit only to the feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md app components/kitchen docs/UI.md tests .github/workflows/prepare-ui-phase5.yml .github/workflows/apply-ui-phase5.yml scripts/_phase5.b64
+          git diff --cached --check
+          git commit -m 'chore(ui): remove legacy CSS and finalize the shadcn migration'
+          git push origin HEAD:refs/heads/chore/shadcn-phase-5-cleanup
