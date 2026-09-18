@@ -145,12 +145,12 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   await page.getByRole("button", { name: "Add a recipe", exact: true }).click();
   const title = page.getByLabel("Recipe title", { exact: true });
   await title.fill("Phase 2 unsaved draft");
-  page.once("dialog", (dialog) => dialog.dismiss());
   await nav.getByRole("button", { name: "Discover", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Keep editing", exact: true }).click();
   await expect(page).toHaveURL(/#new$/);
   await expect(title).toHaveValue("Phase 2 unsaved draft");
-  page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Lock", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Keep editing", exact: true }).click();
   await expect(title).toHaveValue("Phase 2 unsaved draft");
   await page.evaluate(() => window.dispatchEvent(new Event("kitchen:expired")));
   await expect(page.getByRole("heading", { name: "Welcome back." })).toBeVisible();
@@ -159,8 +159,8 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   await page.getByLabel("Private kitchen key").fill(key);
   await page.getByRole("button", { name: "Unlock my kitchen" }).click();
   await expect(title).toHaveValue("Phase 2 unsaved draft");
-  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Lock", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Lock and discard", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Come on in." })).toBeVisible();
   await expect(nav).toBeHidden();
 });

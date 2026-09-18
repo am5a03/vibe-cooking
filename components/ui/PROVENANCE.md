@@ -10,3 +10,9 @@ existing local utility without changing the theme or Radix version. NativeSelect
 is adapted for fluid wrappers, 16px mobile text, native numeric row counts, and
 multiple-selection listboxes without a misleading chevron. Other generated
 primitive behavior is unchanged.
+
+Phase 4 (2026-09-18): generated New York/Radix `alert-dialog` with
+`shadcn@4.21.0 add alert-dialog --yes --overwrite` in an isolated branch preparation.
+Restored the existing Button, theme, configuration and dependency lock afterward;
+only the new primitive is retained. Its cn import uses @/lib/utils. Session and
+confirmation lifecycle policy lives in components/kitchen, not this primitive.

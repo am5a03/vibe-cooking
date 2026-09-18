@@ -1,4 +1,5 @@
 "use client";
+import { useConfirm } from "./confirmation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +32,7 @@ import { Notice } from "./notice";
 import { ErrorBox, Field, Loading, useDirty, useKitchen } from "./shared";
 
 export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate"; id: string }) {
+  const requestConfirmation = useConfirm();
   const { entries, refreshIngredients, go, setDirty } = useKitchen();
   const [doc, setDoc] = useState<EditorDocument | null>(() =>
     mode === "new" ? emptyRecipe() : null,
@@ -175,8 +177,8 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
       setIngredientBusy(false);
     }
   }
-  function reload() {
-    if (dirty && !window.confirm("Discard unsaved edits and reload the current recipe?")) return;
+  async function reload() {
+    if (dirty && !(await requestConfirmation({"title": "Discard unsaved edits?", "description": "Discard unsaved edits and reload the current recipe?", "confirmLabel": "Discard and reload", "destructive": true}))) return;
     setDirty(false);
     setRetry((n) => n + 1);
   }
@@ -761,8 +763,8 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
                 <Button
                   type="button"
                   className="h-auto min-h-11 max-w-full whitespace-normal gap-2 text-[13px] font-semibold"
-                  onClick={() => {
-                    if (window.confirm("Remove this portion profile?")) {
+                  onClick={async () => {
+                    if ((await requestConfirmation({"title": "Remove this portion size?", "description": "Remove this portion profile?", "confirmLabel": "Remove portion size", "destructive": true}))) {
                       update(
                         "servings",
                         doc.servings.filter((_, i) => i !== profileIndex),

@@ -1,4 +1,4 @@
-# Kitchen UI architecture (through Phase 3)
+# Kitchen UI architecture (through Phase 4)
 
 The UI uses shadcn/ui New York components backed by Radix, with the original warm
 kitchen theme. Phase 1 established the theme and CSS boundary. Phase 2 migrated
@@ -8,7 +8,7 @@ recipe details, preferences, the editor and variation comparisons.
 API calls, recipe snapshots, authored serving profiles, editor row identities,
 revision tags, dirty-edit guards and session handling remain owned by the existing
 application/domain code. This is not a routing or form-state rewrite. Native
-confirmation dialogs are intentionally retained for Phase 4.
+beforeunload warnings remain native; application confirmations use shadcn AlertDialog.
 
 ## Ownership
 
@@ -58,7 +58,7 @@ The remaining `recipe-card`, `taste-row`, `remix-option`, `review-badge`,
 compositions are compatibility hooks, not the source of their styling. Keep the
 legacy files for the still-unmigrated shell/fixtures until the Phase 5 cleanup.
 Hidden-content/session protections and reduced-motion rules deliberately cross
-the CSS boundary. Phase 3 adds no body-mounted overlays.
+the CSS boundary. Phase 4 adds one controlled, session-scoped AlertDialog portal.
 
 ## Control contracts
 
@@ -109,3 +109,43 @@ mutual exclusion and busy disabling, catalogue paging, empty state and retry.
 CI keeps screenshots in `kitchen-browser-results`. The migration does not claim
 pixel-identical screenshots or comprehensive assistive-technology certification.
 Manual review should include long text, mobile layouts and the complete editor.
+
+## Phase 4: confirmation and session lifecycle
+
+`components/ui/alert-dialog.tsx` owns the shadcn/Radix primitive; the kitchen's
+`ConfirmationController`, `useConfirm` and `KitchenConfirmation` own product policy.
+There is exactly one outstanding decision. Concurrent requests are rejected rather
+than queued. Every decision has an ID; duplicate or stale handlers do nothing.
+`useConfirm` binds requests to the calling component's lifetime with AbortSignal.
+
+Await confirmation before changing any draft, issuing a mutation or committing a
+route. Supply a specific title, consequence, action label and destructive variant.
+Cancel and Escape are non-destructive. Radix focuses Cancel, traps modal focus and
+prevents outside clicks from approving or dismissing the decision. On closing,
+focus returns to the invoker only when it is still visible and enabled; otherwise
+it moves to the visible unlock input or destination heading. All buttons explicitly
+use type=button. Mobile content is viewport-bounded and scrollable. Global theme
+and reduced-motion tokens apply outside the kitchen root.
+
+Studio restores the committed hash while a dirty navigation decision is pending.
+Cancel leaves the mounted view and dirty state intact. A later hash request
+invalidates the older destination. As before, cancelled history traversal restores
+the current hash with replaceState; this is still the existing hash router, not a
+new history/router library. Native browser refresh/close beforeunload protection
+remains in place and is not replaced by an HTML modal.
+
+Every expiry path synchronously disables confirmations and invalidates pending
+navigation. The portal and overlay unmount immediately (no exit-animation delay),
+while the editor remains mounted but hidden. Hash changes while locked cannot
+replace that retained draft. Unlock never replays an old decision. Session polling
+is aborted on cleanup, and an old logout response cannot overwrite a newer session
+or discard a draft preserved by expiry.
+
+Approval closes the confirmation, then uses each screen's existing busy/error and
+revision-conflict handling. Failed mutations retain their error and draft instead
+of silently retrying. A new destructive attempt requires a new confirmation.
+
+Coverage includes all nine former confirmation call sites: dirty navigation/lock,
+recipe/note/preferences reload, archive/restore, bookmark removal, portion-profile
+removal, and variation unlinking. The final CSS cleanup remains Phase 5. Database,
+authentication protocol, API payloads and deployment settings are unchanged.

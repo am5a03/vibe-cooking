@@ -1,4 +1,5 @@
 "use client";
+import { useConfirm } from "./confirmation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -379,6 +380,7 @@ export function RemixPanel({ source, portions }: { source: MealSnapshot; portion
 }
 
 export function VariationManager({ id }: { id: string }) {
+  const requestConfirmation = useConfirm();
   const { go } = useKitchen();
   const [result, setResult] = useState<VariationsResult | null>(null);
   const [selection, setSelection] = useState<
@@ -448,9 +450,7 @@ export function VariationManager({ id }: { id: string }) {
   }
   async function remove(connection: VariationConnection) {
     if (
-      !window.confirm(
-        "Remove this variation link? Both recipes and their saved versions will stay.",
-      )
+      !(await requestConfirmation({"title": "Remove variation link?", "description": "Remove this variation link? Both recipes and their saved versions will stay.", "confirmLabel": "Remove connection", "destructive": true}))
     )
       return;
     setBusy(true);

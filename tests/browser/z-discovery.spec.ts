@@ -1,6 +1,7 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { test, expect, type APIRequestContext, type BrowserContext } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import process from 'node:process';
+import { screenSession } from '../helpers/browser-session';
 import type { IngredientEntry, RecipeDocument } from '../../lib/kitchen/client';
 const pack = JSON.parse(readFileSync(new URL('../../examples/exploration-pack.json', import.meta.url), 'utf8')) as { ingredients: IngredientEntry[]; recipes: { id: string; recipe: RecipeDocument }[] };
 function auth() {
@@ -31,11 +32,14 @@ test.beforeAll(async ({ request }) => {
     expect([201, 409], await response.text()).toContain(response.status());
   }
 });
-test.beforeEach(async ({ page, request }) => {
+let cookies: Awaited<ReturnType<BrowserContext['cookies']>> = [];
+test.beforeAll(async ({ browser, baseURL }) => {
+  cookies = await screenSession(browser, baseURL);
+});
+test.beforeEach(async ({ page, request, context }) => {
+  await context.addCookies(cookies);
   await resetPreferences(request);
   await page.goto('/');
-  await page.getByLabel('Private kitchen key').fill(process.env.KITCHEN_TEST_TOKEN ?? '');
-  await page.getByRole('button', { name: 'Unlock my kitchen' }).click();
   await expect(page.getByRole('heading', { name: 'What sounds good?' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Find meal ideas', exact: true })).toBeEnabled();
 });

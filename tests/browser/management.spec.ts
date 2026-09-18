@@ -38,8 +38,8 @@ test('create an ingredient and recipe, resolve stale edits, and retain a draft t
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'changed in another tab' })).toBeVisible();
   await expect(page.getByLabel('Recipe title', { exact: true })).toHaveValue('My unsaved change');
-  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Reload latest recipe', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Discard and reload', exact: true }).click();
   await expect(page.getByLabel('Recipe title', { exact: true })).toHaveValue('Changed elsewhere');
   await page.getByLabel('Recipe title', { exact: true }).fill('Keep this through expiry');
   const revoked = await page.request.delete('/api/session', { headers: { Origin: 'http://127.0.0.1:8787', 'X-Kitchen-Request': '1' } });

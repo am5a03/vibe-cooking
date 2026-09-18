@@ -1,4 +1,5 @@
 "use client";
+import { useConfirm } from "./confirmation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +12,7 @@ import { Notice } from "./notice";
 import { ErrorBox, Field, Loading, useDirty, useKitchen } from "./shared";
 
 export function PreferencesPanel() {
+  const requestConfirmation = useConfirm();
   const { entries, setDirty } = useKitchen();
   const [value, setValue] = useState<Preferences | null>(null);
   const [original, setOriginal] = useState("");
@@ -37,8 +39,8 @@ export function PreferencesPanel() {
       });
     return () => controller.abort();
   }, [request]);
-  function reload() {
-    if (dirty && !window.confirm("Discard unsaved preferences and load the latest?")) return;
+  async function reload() {
+    if (dirty && !(await requestConfirmation({"title": "Discard unsaved preferences?", "description": "Discard unsaved preferences and load the latest?", "confirmLabel": "Discard and reload", "destructive": true}))) return;
     setRetry((n) => n + 1);
   }
   async function save() {

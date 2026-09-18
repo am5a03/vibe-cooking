@@ -1,4 +1,5 @@
 "use client";
+import { useConfirm } from "./confirmation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -40,6 +41,7 @@ async function savedRecipe(id: string, signal: AbortSignal): Promise<Favourite> 
   }
 }
 export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
+  const requestConfirmation = useConfirm();
   const { go, entries, setDirty, discovery } = useKitchen();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [tag, setTag] = useState<string | null>(null);
@@ -116,8 +118,8 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
       setBusy(false);
     }
   }
-  function reload() {
-    if (dirty && !window.confirm("Discard this unsaved note and reload the latest data?")) return;
+  async function reload() {
+    if (dirty && !(await requestConfirmation({"title": "Discard unsaved note?", "description": "Discard this unsaved note and reload the latest data?", "confirmLabel": "Discard and reload", "destructive": true}))) return;
     setDirty(false);
     setInitialNote("");
     setRetry((n) => n + 1);
@@ -303,8 +305,8 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
                   type="button"
                   className="h-auto min-h-11 max-w-full whitespace-normal gap-2 text-[13px] font-semibold"
                   disabled={busy}
-                  onClick={() => {
-                    if (window.confirm("Remove this bookmark? The recipe and notes will stay."))
+                  onClick={async () => {
+                    if ((await requestConfirmation({"title": "Remove bookmark?", "description": "Remove this bookmark? The recipe and notes will stay.", "confirmLabel": "Remove bookmark", "destructive": true})))
                       action(async () => {
                         await api(`/favourites/${id}`, { method: "DELETE" });
                         go("saved");
@@ -509,13 +511,9 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
               type="button"
               className="h-auto min-h-11 max-w-full whitespace-normal gap-2 text-[13px] font-semibold"
               disabled={busy || !tag}
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  window.confirm(
-                    recipe.status === "active"
-                      ? "Archive this recipe? It will leave the active list; history and bookmarks stay."
-                      : "Restore this recipe to the active list?",
-                  )
+                  (await requestConfirmation({ title: recipe.status === "active" ? "Archive recipe?" : "Restore recipe?", description: recipe.status === "active" ? "Archive this recipe? It will leave the active list; history and bookmarks stay." : "Restore this recipe to the active list?", confirmLabel: recipe.status === "active" ? "Archive recipe" : "Restore recipe", destructive: recipe.status === "active" }))
                 )
                   action(toggleArchive);
               }}
