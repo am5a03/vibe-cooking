@@ -40,7 +40,7 @@ export function PreferencesPanel() {
   }
   return <div className="narrow">
     <span className="eyebrow">Your tastes, your kitchen</span><h1>A little more <em>you.</em></h1><p>Keep track of the ingredients and portions you prefer.</p>
-    <div className="notice">These preferences are saved for future discovery features. They do not yet filter the recipe catalogue or certify allergy safety.</div>
+    <div className="notice">Discover uses these exclusions and likes when suggesting meals. All recipes remains an unfiltered editing library. Recorded ingredient components are checked, but this is not an allergy-safety certification.</div>
     <ErrorBox message={error}/>{error && <button type="button" className="button" onClick={reload}>Reload preferences</button>}
     {value ? <><fieldset disabled={busy} className="editor-fieldset">
       <section className="panel"><h2>Everyday defaults</h2><div className="form-grid">

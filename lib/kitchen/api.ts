@@ -1,3 +1,4 @@
+import { exploreRoute } from './explore-api.ts';
 import { and, eq, gt } from 'drizzle-orm';
 import { getDb } from '../../db/index.ts';
 import * as S from '../../db/schema.ts';
@@ -36,6 +37,9 @@ export async function handle(request: Request, env: KitchenEnv): Promise<Respons
       V.keys(input, allowed, 'body');
       return input;
     };
+
+    const exploration = await exploreRoute(request, db);
+    if (exploration) return respond(exploration.data, exploration.status, exploration.tag);
 
     if (path === '/api/ingredients') {
       if (method === 'GET') {

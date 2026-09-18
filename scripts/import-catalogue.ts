@@ -7,6 +7,8 @@ import * as V from '../lib/kitchen/validation.ts';
 // Add-only. Validate everything before writing, and never overwrite a differing ID.
 const args: string[] = process.argv.slice(2);
 const apply = args.includes('--apply');
+const preview = args.includes('--preview');
+if (args.some((arg) => arg.startsWith('--') && !['--apply', '--preview'].includes(arg)) || args.filter((arg) => !arg.startsWith('--')).length > 1 || (apply && preview)) throw new Error('Use one catalogue path and either --preview or --apply, not both.');
 const path = args.find((arg) => !arg.startsWith('--')) ?? 'examples/catalogue.json';
 const input = V.record(path.endsWith('.json') ? JSON.parse(await readFile(path, 'utf8')) : {
   ingredients: JSON.parse(await readFile(join(path, 'ingredients.json'), 'utf8')),
@@ -43,8 +45,8 @@ for (const recipe of recipes) {
   }
 }
 console.log(`Validated ${ingredients.length} ingredients and ${recipes.length} draft recipes. No remixes or prep sessions are imported in this slice.`);
-if (!apply) {
-  console.log('Validation only. Add --apply with KITCHEN_URL and API_TOKEN to import.');
+if (!apply && !preview) {
+  console.log('Validation only. Use --preview for a read-only database comparison, or --apply to add records.');
   process.exit(0);
 }
 const base = new URL(process.env.KITCHEN_URL ?? 'http://localhost:3000');
@@ -89,16 +91,26 @@ async function existingRecords(endpoint: 'ingredients' | 'recipes', field: 'ingr
 }
 const existingIngredients = await existingRecords('ingredients', 'ingredient');
 const existingRecipes = await existingRecords('recipes', 'recipe');
-for (const item of sorted) {
-  if (existingIngredients.has(item.id) && JSON.stringify(V.ingredient(existingIngredients.get(item.id))) !== JSON.stringify(item.ingredient)) {
-    throw new Error(`Ingredient ${item.id} differs. Resolve it before import.`);
+let conflicts = 0;
+for (const [kind, incoming, existing, validate] of [
+  ['Ingredient', sorted.map((item) => ({ id: item.id, value: item.ingredient })), existingIngredients, V.ingredient],
+  ['Recipe', recipes.map((item) => ({ id: item.id, value: item.recipe })), existingRecipes, V.recipe],
+] as const) {
+  for (const item of incoming) {
+    let status = 'NEW';
+    if (existing.has(item.id)) {
+      try { status = JSON.stringify(validate(existing.get(item.id))) === JSON.stringify(item.value) ? 'UNCHANGED' : 'CONFLICT'; }
+      catch { status = 'CONFLICT'; }
+    }
+    if (status === 'CONFLICT') conflicts++;
+    console.log(`${status} ${kind} ${item.id}`);
   }
 }
-for (const item of recipes) {
-  if (existingRecipes.has(item.id) && JSON.stringify(V.recipe(existingRecipes.get(item.id))) !== JSON.stringify(item.recipe)) {
-    throw new Error(`Recipe ${item.id} differs. Import never overwrites edits.`);
-  }
+if (preview) {
+  console.log(`Read-only preview complete: ${conflicts} conflicts. No data was written.`);
+  process.exit(0);
 }
+if (conflicts) throw new Error(`${conflicts} conflicting records. Nothing was written. Review changes explicitly; imports never overwrite edits.`);
 for (const [endpoint, entries, existing] of [['ingredients', sorted, existingIngredients], ['recipes', recipes, existingRecipes]] as const) {
   for (const entry of entries) {
     if (existing.has(entry.id)) { console.log(`Unchanged ${endpoint}/${entry.id}`); continue; }

@@ -1,8 +1,11 @@
 'use client';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { BookOpen, Bookmark, Leaf, LockKeyhole, Plus, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { BookOpen, Bookmark, Leaf, LockKeyhole, Plus, SlidersHorizontal, ArrowRight, Sparkles } from 'lucide-react';
 import { api, errorText, ingredients, type IngredientEntry } from '../../lib/kitchen/client';
 import { KitchenContext, ErrorBox, Loading } from './shared';
+import { Discovery } from './discovery';
+import { VariationManager } from './remixes';
+import type { DiscoveryConstraints } from '../../lib/kitchen/exploration-client';
 import { RecipeBrowser } from './browser';
 import { RecipeDetail } from './recipe';
 import { RecipeEditor } from './editor';
@@ -10,7 +13,7 @@ import { PreferencesPanel } from './preferences';
 
 function routeValue() {
   const route = window.location.hash.slice(1);
-  return /^(discover|saved|preferences|new|(?:recipe|favourite|edit|duplicate)\/[A-Za-z0-9_-]+)$/.test(route) ? route : 'discover';
+  return /^(discover|all|saved|preferences|new|(?:recipe|favourite|edit|duplicate|variations)\/[A-Za-z0-9_-]+)$/.test(route) ? route : 'discover';
 }
 function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () => void }) {
   const [key, setKey] = useState('');
@@ -37,6 +40,7 @@ export function Studio() {
   const [started, setStarted] = useState(false);
   const [locked, setLocked] = useState(true);
   const [route, setRoute] = useState('discover');
+  const [discovery, setDiscovery] = useState<DiscoveryConstraints | null>(null);
   const [entries, setEntries] = useState<IngredientEntry[]>([]);
   const [error, setError] = useState('');
   const [locking, setLocking] = useState(false);
@@ -64,7 +68,9 @@ export function Studio() {
       const next = routeValue();
       if (next === currentRoute.current) return;
       if (dirty.current && !window.confirm('Leave without saving your changes?')) { window.history.replaceState(null, '', `#${currentRoute.current}`); return; }
-      dirty.current = false; currentRoute.current = next; setRoute(next);
+      dirty.current = false; currentRoute.current = next;
+      if (['all', 'saved', 'preferences', 'new'].includes(next)) setDiscovery(null);
+      setRoute(next);
     }
     change(); window.addEventListener('hashchange', change);
     const beforeUnload = (event: BeforeUnloadEvent) => { if (dirty.current) { event.preventDefault(); event.returnValue = ''; } };
@@ -94,17 +100,18 @@ export function Studio() {
     <header className="site-header">
       <button className="brand" type="button" onClick={() => go('discover')} aria-label="Vibe Cooking home"><span className="brand-mark"><Leaf size={24}/></span><span>Vibe Cooking<span className="brand-sub">The personal kitchen</span></span></button>
       {started && !locked && <><nav aria-label="Main navigation">
-        <button type="button" className={view === 'discover' ? 'active' : ''} onClick={() => go('discover')}><BookOpen size={17}/>Recipes</button>
+        <button type="button" className={view === 'discover' ? 'active' : ''} onClick={() => go('discover')}><Sparkles size={17}/>Discover</button>
+        <button type="button" className={view === 'all' ? 'active' : ''} onClick={() => go('all')}><BookOpen size={17}/>All recipes</button>
         <button type="button" className={view === 'saved' ? 'active' : ''} onClick={() => go('saved')}><Bookmark size={17}/>My kitchen</button>
         <button type="button" className={view === 'preferences' ? 'active' : ''} onClick={() => go('preferences')}><SlidersHorizontal size={17}/>Preferences</button>
       </nav><button type="button" className="button subtle lock-button" onClick={lock} disabled={locking}><LockKeyhole size={16}/>{locking ? 'Locking…' : 'Lock'}</button></>}
     </header>
     {checking ? <Loading/> : locked && <><ErrorBox message={error}/><Unlock expired={started} onUnlock={unlock}/></>}
-    {started && <div hidden={locked}><KitchenContext.Provider value={{ entries, refreshIngredients, go, setDirty }}>
+    {started && <div hidden={locked}><KitchenContext.Provider value={{ entries, refreshIngredients, go, setDirty, discovery, setDiscovery }}>
       <main className="workspace"><ErrorBox message={error}/>
         {error && <button className="button" type="button" onClick={() => { setError(''); refreshIngredients().catch((cause) => setError(errorText(cause))); }}>Retry ingredient connection</button>}
-        {view === 'discover' || view === 'saved' ? <>
-          <div className="page-heading"><div><span className="eyebrow">{view === 'saved' ? 'Worth coming back to' : 'A little inspiration, on your terms'}</span><h1>{view === 'saved' ? <>Your personal <em>cookbook.</em></> : <>What sounds <em>good?</em></>}</h1><p>{view === 'saved' ? 'The exact recipes you saved, with room for your own notes.' : 'Start with a complete dish. Make it yours, one good idea at a time.'}</p></div><button type="button" className="button primary" onClick={() => go('new')}><Plus size={17}/>Add a recipe</button></div>
+        {view === 'discover' ? <Discovery/> : view === 'variations' ? <VariationManager key={route} id={id}/> : view === 'all' || view === 'saved' ? <>
+          <div className="page-heading"><div><span className="eyebrow">{view === 'saved' ? 'Worth coming back to' : 'A little inspiration, on your terms'}</span><h1>{view === 'saved' ? <>Your personal <em>cookbook.</em></> : <>Every recipe. <em>Your way.</em>}</h1><p>{view === 'saved' ? 'The exact recipes you saved, with room for your own notes.' : 'Start with a complete dish. Make it yours, one good idea at a time.'}</p></div><button type="button" className="button primary" onClick={() => go('new')}><Plus size={17}/>Add a recipe</button></div>
           <RecipeBrowser key={view} saved={view === 'saved'}/>
         </> : view === 'preferences' ? <PreferencesPanel/> : ['new', 'edit', 'duplicate'].includes(view) ? <RecipeEditor key={route} mode={view as 'new' | 'edit' | 'duplicate'} id={id}/> : <RecipeDetail key={route} id={id} saved={view === 'favourite'}/>}
       </main>

@@ -6,6 +6,7 @@ export class TestD1 {
     this.sqlite = new DatabaseSync(':memory:');
     this.sqlite.exec('PRAGMA foreign_keys=ON');
     this.sqlite.exec(readFileSync(new URL('../drizzle/migrations/0001_kitchen.sql', import.meta.url), 'utf8'));
+    this.sqlite.exec(readFileSync(new URL('../drizzle/migrations/0003_recipe_remixes.sql', import.meta.url), 'utf8'));
   }
   prepare(sql) { return new Statement(this, sql); }
   close() { this.sqlite.close(); }

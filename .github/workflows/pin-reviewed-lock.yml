@@ -1,0 +1,51 @@
+# One-time bootstrap of the exact lockfile already reviewed from this repository's CI.
+# No installs, migrations, deployment, or source-code changes are performed by this job.
+# Remove this workflow after the lockfile commit is verified.
+name: Pin reviewed dependency lock
+on:
+  push:
+    branches: ['feat/discovery-remixes']
+    paths: ['.github/workflows/pin-reviewed-lock.yml']
+permissions:
+  contents: read
+jobs:
+  pin:
+    if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/feat/discovery-remixes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Read the fixed CI artifact and verify exact reviewed bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test ! -e package-lock.json
+          gh api repos/am5a03/vibe-cooking/actions/artifacts/10534211812/zip > "$RUNNER_TEMP/reviewed-lock.zip"
+          unzip -p "$RUNNER_TEMP/reviewed-lock.zip" package-lock.json > package-lock.json
+          echo 'f82e7a79a4e72ed4a53b99e8101c387667191e86489d6caa3d9ede8a22e26238  package-lock.json' | sha256sum --check
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+          assert.equal(lock.lockfileVersion, 3);
+          assert.deepEqual(lock.packages[''].dependencies, pkg.dependencies);
+          assert.deepEqual(lock.packages[''].devDependencies, pkg.devDependencies);
+          for (const entry of Object.values(lock.packages)) {
+            if (entry.resolved) assert.equal(new URL(entry.resolved).origin, 'https://registry.npmjs.org');
+          }
+          NODE
+      - name: Commit only the lock on the unchanged feature branch
+        run: |
+          test "$(git ls-remote origin refs/heads/feat/discovery-remixes | cut -f1)" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package-lock.json
+          test "$(git diff --cached --name-only)" = 'package-lock.json'
+          git commit -m 'chore: pin the reviewed CI dependency lockfile'
+          git push origin HEAD:refs/heads/feat/discovery-remixes
