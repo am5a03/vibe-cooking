@@ -17,6 +17,9 @@
 			"service": "vibe-cooking"
 		}
 	],
+	"vars": {
+  	"KITCHEN_ORIGIN": "https://vibe-cooking.am5a03.workers.dev"
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",
