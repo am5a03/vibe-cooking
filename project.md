@@ -1,15 +1,9 @@
 # Vibe Cooking
 
-Single-user MealSpin backend foundation. See README.md and docs/API.md for the current contract.
+Connected single-user cookbook for MealSpin on Next.js, OpenNext/Cloudflare Workers, D1 and Drizzle.
 
-- Next.js 15.5 maintenance line + React 19 + TypeScript.
-- Cloudflare Workers via OpenNext; no Pages/next-on-pages.
-- Cloudflare D1 queried through Drizzle ORM.
-- One private bearer secret; no application accounts or OAuth.
-- SQL migrations are reviewed and applied only by Wrangler. Recipe history uses triggers.
-- Two sample recipe drafts; CLI can add the earlier complete catalogue without overwriting edits.
-- Preferences, favourites and cooking notes are stored server-side. The v2 browser UI is not connected yet.
-- No required R2, Workers AI, paid model, or multi-tenant infrastructure.
-- npm and Node 22. No migrations or deploys run automatically on PRs.
+Browse, create, duplicate, edit and archive real recipes; save exact versions; persist personal cooking notes and preferences. One private kitchen, no accounts or OAuth. Browser unlock uses iron-session with a revocable D1 record. All data endpoints still enforce access; never put API_TOKEN in a public bundle.
 
-Keep runtime secrets out of NEXT_PUBLIC variables and source control. Keep private API responses no-store. Validate all incoming data and require ETags for edits. Test schema and API changes together. Ingredient, taste and safety claims are not certified by schema validation.
+Migrations 0001 (kitchen) and 0002 (sessions) are additive, reviewed SQL applied by Wrangler. Do not edit applied migrations or reset the user's database. The UI has no silently populated catalogue or demo fallback. Existing sample/full seed conflicts require explicit reconciliation.
+
+Automatic preference ranking, live exclusion filtering, remix links and shared prep sessions are not yet part of this connected slice. Recipes remain drafts. See README.md, docs/API.md and docs/BROWSER-ACCESS.md.

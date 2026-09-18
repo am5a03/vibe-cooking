@@ -35,7 +35,7 @@ jobs:
       - name: Typecheck
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run typecheck
-      - name: Test API and migrations
+      - name: Test API, sessions and migrations
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
       - name: Lint
@@ -54,3 +54,17 @@ jobs:
       - name: Validate Worker bundle without deploying
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: npx wrangler deploy --dry-run
+      - name: Install test browser
+        id: browser
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx playwright install --with-deps chromium
+      - name: Browser workflow on isolated local Workers and D1
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node scripts/browser-check.mjs
+      - name: Preserve browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitchen-browser-results
+          path: test-results/
+          if-no-files-found: ignore
