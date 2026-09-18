@@ -24,6 +24,8 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
     if (error && !busy) input.current?.focus();
   }, [error, busy]);
 
+  useEffect(() => { if (expired) input.current?.focus(); }, [expired]);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // Guard repeated Enter/submission events before React paints the disabled state.
@@ -55,7 +57,7 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
           <Leaf size={118} strokeWidth={0.8} />
         </div>
       </div>
-      <section aria-labelledby={headingId} className="min-w-0">
+      <section data-kitchen-unlock aria-labelledby={headingId} className="min-w-0">
         <Card className="min-w-0 gap-0 rounded-[17px] p-[26px] shadow-[0_10px_40px_#1a2e1e06] min-[681px]:p-[38px]">
           <CardHeader className="gap-0 p-0">
             <LockKeyhole className="mb-6 size-[26px] text-primary" aria-hidden="true" />
