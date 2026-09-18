@@ -7,27 +7,42 @@ import {
   type Route,
 } from "@playwright/test";
 import { randomUUID } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { RecipeDocument } from "../../lib/kitchen/client";
 
 const key = process.env.KITCHEN_TEST_TOKEN;
-if (!key) throw new Error("Run via npm run test:browser against disposable local D1.");
+const state = process.env.KITCHEN_TEST_STATE;
+if (!key || !state) throw new Error("Run via npm run test:browser against disposable local D1.");
 const headers = { Authorization: `Bearer ${key}` };
 
 // These are screen tests, not repeated login tests. Obtain one real, server-issued
 // session and copy only its cookies into otherwise isolated browser contexts.
 // The auth/expiry tests remain independent; production throttling is unchanged.
+// Persist only under the disposable runner state (not test-results), so a worker
+// restart after a failed test does not consume another login attempt. The runner
+// deletes this directory in its finally block. No production session is involved.
+const cookiePath = join(state, "ui-phase3-cookies.json");
 let cookies: Awaited<ReturnType<BrowserContext["cookies"]>> = [];
 test.beforeAll(async ({ browser, baseURL }) => {
   if (!baseURL) throw new Error("The isolated browser runner must provide baseURL.");
   const session = await browser.newContext({ baseURL });
   try {
-    const response = await session.request.post("/api/session", {
-      headers: { Origin: new URL(baseURL).origin, "X-Kitchen-Request": "1" },
-      data: { key },
-    });
-    expect(response.status(), await response.text()).toBe(200);
+    if (existsSync(cookiePath)) {
+      await session.addCookies(JSON.parse(readFileSync(cookiePath, "utf8")));
+    }
+    const current = await session.request.get("/api/session");
+    expect(current.ok()).toBe(true);
+    if (!(await current.json()).data.authenticated) {
+      const response = await session.request.post("/api/session", {
+        headers: { Origin: new URL(baseURL).origin, "X-Kitchen-Request": "1" },
+        data: { key },
+      });
+      expect(response.status(), await response.text()).toBe(200);
+    }
     cookies = await session.cookies();
     expect(cookies.some((cookie) => cookie.httpOnly)).toBe(true);
+    writeFileSync(cookiePath, JSON.stringify(cookies), { mode: 0o600 });
   } finally {
     await session.close();
   }
@@ -238,11 +253,13 @@ test("editor retains row identity, multiple ingredient selection, portion review
   const save = page.getByRole("button", { name: "Save changes", exact: true });
   await expect(save).toBeDisabled();
   await page.getByLabel("Number of portions", { exact: true }).fill("4");
-  await page
-    .getByLabel(
-      "I have reviewed the quantities, timings, and steps for every new or changed portion size.",
-    )
-    .check();
+  const review = page.getByLabel(
+    "I have reviewed the quantities, timings, and steps for every new or changed portion size.",
+  );
+  // Acknowledging the existing guard removes the checkbox; check() would try to
+  // re-read a checked state from an element that intentionally no longer exists.
+  await review.click();
+  await expect(review).toHaveCount(0);
   await expect(save).toBeEnabled();
 
   let pending: Route | undefined;
