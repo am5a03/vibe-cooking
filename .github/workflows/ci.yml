@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: ['claude/setup-nextjs-cloudflare-019m71wRrdmgY5rwo41cCUfa']
+    branches: ['main']
   workflow_dispatch:
 permissions:
   contents: read
