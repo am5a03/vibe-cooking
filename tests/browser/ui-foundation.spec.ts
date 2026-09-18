@@ -25,7 +25,8 @@ test("the final theme, hidden content, native focus and reduced motion work with
       "rgb(255, 254, 249)",
     );
     await expect(input).toHaveCSS("height", "44px");
-    await expect(input).toHaveCSS("min-height", "0px");
+    // Unlike the old block fixture, this input is a flex item with an automatic minimum.
+    await expect(input).toHaveCSS("min-height", "auto");
     await expect(input).toHaveCSS("font-size", width < 768 ? "16px" : "15px");
     await expect(region.getByRole("button", { name: "Unlock my kitchen" })).toHaveCSS(
       "background-color",

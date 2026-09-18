@@ -406,7 +406,10 @@ test("long recipe content remains readable at narrow widths after CSS cleanup", 
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 960 });
     await page.goto("/#all");
-    await page.getByLabel("Search recipe titles").fill(title);
+    const search = page.getByLabel("Search recipe titles");
+    await expect(search).toHaveAttribute("maxlength", "120");
+    await search.fill(title);
+    await expect(search).toHaveValue(title.slice(0, 120));
     await page.getByRole("button", { name: "Search", exact: true }).click();
     const card = page.locator("[data-kitchen-recipe-card]").filter({ hasText: title });
     await expect(card).toHaveCount(1);
