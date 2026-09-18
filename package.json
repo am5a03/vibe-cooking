@@ -19,7 +19,6 @@
     "format": "biome format --write .",
     "test": "node --import tsx --experimental-sqlite --test tests/*.test.mjs",
     "test:browser": "node scripts/browser-check.mjs",
-    "db:migration:new": "wrangler d1 migrations create DB",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "node scripts/check-deploy.mjs && wrangler d1 migrations apply DB --remote",
     "db:export:remote": "wrangler d1 export DB --remote --output backups/kitchen.sql",
@@ -27,7 +26,8 @@
     "token:create": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('hex'))\"",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv worker-configuration.d.ts",
     "db:generate": "drizzle-kit generate",
-    "db:generate:custom": "drizzle-kit generate --custom"
+    "db:generate:custom": "drizzle-kit generate --custom",
+    "db:migrations:check": "drizzle-kit check"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.6",
