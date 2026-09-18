@@ -1,0 +1,33 @@
+# Temporary bootstrap workflow; removed before the final Phase 1 pull request.
+name: Prepare UI foundation dependencies
+on:
+  push:
+    branches: ['chore/shadcn-phase-1-foundation']
+    paths: ['.github/workflows/prepare-ui-foundation.yml']
+permissions:
+  contents: read
+jobs:
+  lockfile:
+    if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/chore/shadcn-phase-1-foundation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/shadcn-phase-1-foundation
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve only the foundation UI dependencies
+        run: npm install --package-lock-only --ignore-scripts --save-exact --no-audit --no-fund tailwind-merge@3 tw-animate-css@1
+      - name: Commit the npm-generated manifest and lockfile to this branch only
+        run: |
+          git diff --stat -- package.json package-lock.json
+          if git diff --quiet -- package.json package-lock.json; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json
+          git commit -m 'chore(ui): align Tailwind 4 merge and animation dependencies'
+          git push origin HEAD:refs/heads/chore/shadcn-phase-1-foundation
