@@ -1,33 +1,130 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  check,
+  foreignKey,
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core';
 
-const timestamp = () => text().notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`);
+const timestamp = () =>
+  text()
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`);
+
 // JSON documents are authoritative; SQL indexes project searchable fields.
-export const ingredients = sqliteTable('kitchen_ingredients', {
-  id: text().primaryKey(), document: text().notNull(), createdAt: timestamp(),
-});
-export const recipes = sqliteTable('kitchen_recipes', {
-  id: text().primaryKey(), document: text().notNull(), revision: integer().notNull().default(1),
-  createdAt: timestamp(), updatedAt: timestamp(),
-}, (t) => [
-  index('kitchen_recipes_mode').on(sql`json_extract(${t.document}, '$.mode')`, t.id),
-  index('kitchen_recipes_status').on(sql`json_extract(${t.document}, '$.status')`, t.id),
-  check('recipe_json', sql`json_valid(${t.document})`),
-  check('recipe_revision', sql`${t.revision} > 0`),
-]);
-export const recipeHistory = sqliteTable('kitchen_recipe_history', {
-  recipeId: text().notNull().references(() => recipes.id), revision: integer().notNull(),
-  document: text().notNull(), createdAt: timestamp(),
-}, (t) => [primaryKey({ columns: [t.recipeId, t.revision] })]);
-export const preferences = sqliteTable('kitchen_preferences', {
-  id: text().primaryKey(), document: text().notNull(), revision: integer().notNull().default(1),
-  updatedAt: timestamp(),
-}, (t) => [check('singleton_preferences', sql`${t.id} = 'default'`)]);
-export const favourites = sqliteTable('kitchen_favourites', {
-  recipeId: text().primaryKey().references(() => recipes.id), recipeRevision: integer().notNull(),
-  portions: integer().notNull(), snapshot: text().notNull(), createdAt: timestamp(),
-});
-export const notes = sqliteTable('kitchen_notes', {
-  recipeId: text().primaryKey().references(() => recipes.id), document: text().notNull(),
-  revision: integer().notNull().default(1), updatedAt: timestamp(),
-});
+export const ingredients = sqliteTable(
+  'kitchen_ingredients',
+  {
+    id: text().primaryKey(),
+    document: text().notNull(),
+    createdAt: timestamp(),
+  },
+  (t) => [check('ingredient_json', sql`json_valid(${t.document})`)],
+);
+
+export const recipes = sqliteTable(
+  'kitchen_recipes',
+  {
+    id: text().primaryKey(),
+    document: text().notNull(),
+    revision: integer().notNull().default(1),
+    createdAt: timestamp(),
+    updatedAt: timestamp(),
+  },
+  (t) => [
+    index('kitchen_recipes_mode').on(sql`json_extract(${t.document}, '$.mode')`, t.id),
+    index('kitchen_recipes_status').on(sql`json_extract(${t.document}, '$.status')`, t.id),
+    check('recipe_json', sql`json_valid(${t.document})`),
+    check('recipe_revision', sql`${t.revision} > 0`),
+  ],
+);
+
+export const recipeHistory = sqliteTable(
+  'kitchen_recipe_history',
+  {
+    recipeId: text()
+      .notNull()
+      .references(() => recipes.id),
+    revision: integer().notNull(),
+    document: text().notNull(),
+    createdAt: timestamp(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.recipeId, t.revision] }),
+    check('recipe_history_json', sql`json_valid(${t.document})`),
+  ],
+);
+
+export const preferences = sqliteTable(
+  'kitchen_preferences',
+  {
+    id: text().primaryKey(),
+    document: text().notNull(),
+    revision: integer().notNull().default(1),
+    updatedAt: timestamp(),
+  },
+  (t) => [
+    check('singleton_preferences', sql`${t.id} = 'default'`),
+    check('preferences_json', sql`json_valid(${t.document})`),
+    check('preferences_revision', sql`${t.revision} > 0`),
+  ],
+);
+
+export const favourites = sqliteTable(
+  'kitchen_favourites',
+  {
+    recipeId: text()
+      .primaryKey()
+      .references(() => recipes.id),
+    recipeRevision: integer().notNull(),
+    portions: integer().notNull(),
+    snapshot: text().notNull(),
+    createdAt: timestamp(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.recipeId, t.recipeRevision],
+      foreignColumns: [recipeHistory.recipeId, recipeHistory.revision],
+    }),
+    check('favourite_portions', sql`${t.portions} > 0`),
+    check('favourite_snapshot_json', sql`json_valid(${t.snapshot})`),
+  ],
+);
+
+export const notes = sqliteTable(
+  'kitchen_notes',
+  {
+    recipeId: text()
+      .primaryKey()
+      .references(() => recipes.id),
+    document: text().notNull(),
+    revision: integer().notNull().default(1),
+    updatedAt: timestamp(),
+  },
+  (t) => [
+    check('note_json', sql`json_valid(${t.document})`),
+    check('note_revision', sql`${t.revision} > 0`),
+  ],
+);
+
+export const browserSessions = sqliteTable(
+  'kitchen_browser_sessions',
+  {
+    tokenHash: text().primaryKey(),
+    expiresAt: integer().notNull(),
+  },
+  (t) => [index('kitchen_browser_sessions_expiry').on(t.expiresAt)],
+);
+
+export const loginLimits = sqliteTable(
+  'kitchen_login_limits',
+  {
+    key: text().primaryKey(),
+    attempts: integer().notNull(),
+    resetsAt: integer().notNull(),
+  },
+  (t) => [index('kitchen_login_limits_expiry').on(t.resetsAt)],
+);
