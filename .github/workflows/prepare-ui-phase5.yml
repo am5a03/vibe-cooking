@@ -1,0 +1,45 @@
+# Temporary baseline/export workflow. Removed from the final PR diff.
+name: Prepare UI phase 5
+on:
+  push:
+    branches: ['chore/shadcn-phase-5-cleanup']
+    paths: ['.github/workflows/prepare-ui-phase5.yml']
+permissions:
+  contents: read
+jobs:
+  baseline:
+    if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/chore/shadcn-phase-5-cleanup'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Export tracked source and installed tooling for offline review
+        run: |
+          mkdir -p /tmp/ui-phase5-export
+          git archive --format=tar.gz HEAD -o /tmp/ui-phase5-export/source.tar.gz
+          tar -czf /tmp/ui-phase5-export/node-modules.tar.gz node_modules
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-phase5-source
+          path: /tmp/ui-phase5-export/
+          retention-days: 3
+      - name: Verify merged baseline
+        run: npm run typecheck && npm run lint && npm test && npm run db:migrations:check
+      - name: Build baseline without deployment
+        run: npm run build:worker && npx wrangler deploy --dry-run
+      - run: npx playwright install --with-deps chromium
+      - name: Baseline browser workflows on disposable local D1
+        run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-phase5-before
+          path: test-results/
+          if-no-files-found: ignore
