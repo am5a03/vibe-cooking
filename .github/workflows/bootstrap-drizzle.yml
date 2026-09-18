@@ -1,0 +1,62 @@
+name: Bootstrap Drizzle metadata
+
+on:
+  push:
+    branches: ['chore/setup-drizzle-kit']
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    if: "!contains(github.event.head_commit.message, '[drizzle-bootstrap]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies and refresh lockfile
+        run: npm install
+      - name: Generate current-schema snapshot
+        run: npx drizzle-kit generate --name=drizzle_baseline
+      - name: Rebase generated metadata after legacy migrations
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const root = 'drizzle/migrations';
+          const meta = path.join(root, 'meta');
+          const journalPath = path.join(meta, '_journal.json');
+          const journal = JSON.parse(fs.readFileSync(journalPath, 'utf8'));
+          if (journal.entries.length !== 1) {
+            throw new Error('Expected exactly one generated baseline journal entry');
+          }
+
+          const entry = journal.entries[0];
+          const generatedTag = entry.tag;
+          const generatedSql = path.join(root, generatedTag + '.sql');
+          const generatedSnapshot = path.join(meta, '0000_snapshot.json');
+
+          const baselineTag = '0003_drizzle_baseline';
+          fs.renameSync(generatedSnapshot, path.join(meta, '0003_snapshot.json'));
+          fs.writeFileSync(
+            path.join(root, baselineTag + '.sql'),
+            '-- Drizzle metadata baseline. Schema was already applied by 0001_kitchen.sql and 0002_browser_sessions.sql.\nSELECT 1;\n',
+          );
+          fs.unlinkSync(generatedSql);
+
+          entry.idx = 3;
+          entry.tag = baselineTag;
+          journal.entries = [entry];
+          fs.writeFileSync(journalPath, JSON.stringify(journal, null, 2) + '\n');
+          NODE
+      - name: Commit generated lockfile and Drizzle metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json drizzle/migrations
+          git commit -m "chore: bootstrap Drizzle migration metadata [drizzle-bootstrap]"
+          git push
