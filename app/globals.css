@@ -1,111 +1,91 @@
+/* Declare the order before Tailwind establishes its default layers. */
+@layer theme, base, legacy, components, utilities;
 @import "tailwindcss";
-@config "../tailwind.config.ts";
+@import "tw-animate-css";
+/* Keep the original discovery -> kitchen cascade order during migration. */
+@import "./kitchen-discovery.css" layer(legacy);
+@import "./kitchen.css" layer(legacy);
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+/* The kitchen remains light-only; do not activate dark utilities from the OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Complete CSS colors, not bare HSL channels. Shared by body-mounted portals. */
+:root {
+  color-scheme: light;
+  --background: #f8f6ee;
+  --foreground: #283e30;
+  --card: #fffef9;
+  --card-foreground: #283e30;
+  --popover: #fffef9;
+  --popover-foreground: #283e30;
+  --primary: #305e42;
+  --primary-foreground: #ffffff;
+  --secondary: #e9edde;
+  --secondary-foreground: #283e30;
+  --muted: #e9edde;
+  --muted-foreground: #687362;
+  --accent: #ecefdf;
+  --accent-foreground: #305e42;
+  --destructive: #803f25;
+  --destructive-foreground: #ffffff;
+  --border: #dedfce;
+  --input: #d5dacb;
+  --ring: #b07a48;
+  --radius: 0.5rem;
+
+  /* Temporary legacy aliases. Never redefine the semantic tokens in a screen. */
+  --paper: var(--background);
+  --surface: var(--card);
+  --ink: var(--foreground);
+  --green: var(--primary);
+  --line: var(--border);
+  --soft: var(--secondary);
+  --kitchen-muted: var(--muted-foreground);
+  --kitchen-accent: #ad6b42;
 }
 
-/* Dish-first discovery and explicitly reviewed recipe transformations. */
-.discovery-fields { grid-template-columns: 1fr .6fr .8fr 1.4fr; }
-.discovery-actions, .results-heading, .remix-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; }
-.discovery-actions { margin-top:22px; }
-.discovery-actions p { max-width:650px; margin:0; }
-.results-heading { margin:34px 0 18px; }
-.results-heading h2, .remix-heading h2 { margin:8px 0; }
-.constraint-strip { display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 25px; }
-.constraint-strip span, .review-badge { padding:6px 12px; border-radius:30px; font-size:12px; background:#eef0e4; color:#35492e; }
-.recipe-card-body { padding:24px; }
-.recipe-card-body h2 { font-size:24px; line-height:1.25; }
-.recipe-card-body h2 button { text-align:left; font:inherit; color:inherit; border:0; background:none; cursor:pointer; padding:0; }
-.recipe-card-body p { line-height:1.65; }
-.recommendation-reason { font-size:12px; padding-top:12px; border-top:1px solid #e4e0d5; min-height:58px; }
-.discovery-bottom { text-align:center; margin:30px 0; }
-.discovery-bottom p { max-width:560px; margin:12px auto; }
-.remix-studio { margin:22px 0 35px; }
-.remix-heading h2 { font-family:Georgia,serif; font-size:28px; }
-.remix-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:22px 0; }
-.remix-option { background:#faf9f3; border:1px solid #d9dbce; border-radius:14px; padding:22px; text-align:left; display:flex; gap:13px; flex-direction:column; cursor:pointer; font:inherit; color:inherit; }
-.remix-option strong { font-size:19px; font-family:Georgia,serif; }
-.remix-option>span:last-child { font-size:12px; display:flex; gap:10px; align-items:center; }
-.remix-option:hover, .remix-option.selected { background:#edf0e4; border-color:#466345; }
-.remix-preview { padding-top:15px; border-top:1px solid #ddd9ce; }
-.comparison-meals { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-.comparison-meals>section { padding:22px; border-radius:12px; background:#f6f5ee; min-width:0; }
-.comparison-meals>section:last-child { background:#edf0e4; }
-.comparison-meals h3 { font-size:22px; line-height:1.35; margin:12px 0; }
-.comparison-meals p { line-height:1.6; }
-.comparison-axes { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:25px 0; padding:20px 0; border-top:1px solid #ddd9ce; border-bottom:1px solid #ddd9ce; }
-.comparison-axes div { display:flex; flex-direction:column; gap:8px; font-size:13px; }
-.component-diff { list-style:none; padding:0; margin:0 0 24px; }
-.component-diff li { display:flex; gap:18px; padding:12px 0; border-bottom:1px solid #e7e3d8; }
-.diff-badge { width:72px; flex-shrink:0; font-size:11px; font-weight:600; text-transform:uppercase; padding-top:4px; color:#476143; }
-.diff-removed .diff-badge { color:#985c39; }
-.diff-changed .diff-badge { color:#805816; }
-.component-diff small { display:inline-block; margin-left:10px; color:#6f7168; }
-.component-diff p { font-size:13px; line-height:1.6; margin:5px 0; }
-.comparison-steps { padding:18px; border:1px solid #ddd9ce; border-radius:12px; margin:24px 0; }
-.comparison-steps summary { cursor:pointer; font-weight:600; }
-.comparison-steps .comparison-meals { margin-top:18px; }
-.comparison-steps li { font-size:13px; line-height:1.6; margin-bottom:20px; }
-.connection-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding:18px 0; border-bottom:1px solid #e6e3d8; }
-.connection-row>p { width:100%; }
-.connection-row p { font-size:13px; }
-.review-badge.stale { color:#835127; background:#f7eddf; }
-.review-panel .review-check { display:flex; gap:12px; padding:18px 0; line-height:1.6; }
-.review-panel .review-check input { width:18px; height:18px; flex-shrink:0; margin-top:3px; }
-@media(max-width:900px) { .discovery-fields { grid-template-columns:1fr 1fr; } .site-header nav button { padding:10px; } }
-@media(max-width:600px) {
-  .discovery-actions,.results-heading,.remix-heading { align-items:flex-start; flex-direction:column; gap:12px; }
-  .discovery-actions .button { width:100%; justify-content:center; }
-  .comparison-meals { grid-template-columns:1fr; gap:12px; }
-  .comparison-axes { grid-template-columns:1fr; }
-  .remix-option { min-width:0; }
-  .remix-heading h2 { font-size:25px; }
-  .constraint-strip span { max-width:100%; overflow-wrap:anywhere; }
-  .component-diff li { gap:8px; }
-  .component-diff li>div { min-width:0; overflow-wrap:anywhere; }
+@theme inline {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  /* Include future portals outside .kitchen-app in the motion preference. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot], [data-slot] * {
+      scroll-behavior: auto !important;
+      animation: none !important;
+      transition: none !important;
+    }
+  }
 }
