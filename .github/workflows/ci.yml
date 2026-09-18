@@ -1,59 +1,42 @@
 name: CI
-
 on:
   pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
-
+    branches: ['feat/single-user-cloudflare-foundation']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kitchen-ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          node-version: '22'
+      - name: Install (bootstrap a lockfile when none exists)
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Preserve resolved dependency lock for review
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Biome linter
-        run: pnpm run lint
-
-      - name: Run Biome formatter check
-        run: pnpm exec biome check --error-on-warnings .
-
-  type-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run TypeScript type check
-        run: pnpm exec tsc --noEmit
+          name: dependency-lock
+          path: package-lock.json
+          if-no-files-found: ignore
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - name: Validate starter catalogue without writing data
+        run: npm run catalogue:import
+      - name: Build for Workers (no deployment)
+        run: npm run build:worker
+      - name: Validate Worker bundle without deploying
+        run: npx wrangler deploy --dry-run

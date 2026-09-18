@@ -1,328 +1,123 @@
-# Vibe Cooking - Full-Stack Next.js + Cloudflare
+# Vibe Cooking — personal kitchen backend
 
-A modern full-stack web application template built with Next.js 15, React 19, and Cloudflare's edge platform.
+Single-user foundation for MealSpin. Next.js App Router runs on **Cloudflare Workers through OpenNext**, with **D1 + Drizzle ORM**. No accounts, Google OAuth, tenants, AI service, or R2 bucket is required.
 
-## Tech Stack
+The homepage is a setup landing page, not the MealSpin v2 interface. This change builds the backend; it does not silently replace the prototype's browser storage with server storage.
 
-### Frontend
-- **Next.js 15** - App Router with React Server Components
-- **React 19** - Latest React with TypeScript
-- **TailwindCSS 4** - Utility-first CSS framework
-- **shadcn/ui** - Beautiful, accessible component library
-- **React Hook Form + Zod** - Type-safe form validation
+## Local setup
 
-### Backend & Infrastructure
-- **Cloudflare Workers** - Serverless edge compute
-- **Cloudflare D1** - Distributed SQLite database
-- **Cloudflare R2** - Object storage
-- **Cloudflare Workers AI** - Edge AI inference
-- **Drizzle ORM** - Type-safe database queries
-- **Better Auth** - Modern authentication with Google OAuth
+Use Node 22.16 or newer in the Node 22 line. The repository now consistently uses npm.
 
-### Developer Experience
-- **TypeScript** - Full type safety
-- **Biome** - Fast linting and formatting
-- **pnpm** - Efficient package management
-- **GitHub Actions** - Automated CI/CD
-
-## Project Structure
-
-```
-vibe-cooking/
-├── app/                    # Next.js App Router pages
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
-│   └── globals.css        # Global styles
-├── components/            # Shared React components
-│   └── ui/               # shadcn/ui components
-├── db/                   # Database configuration
-│   ├── schema.ts         # Drizzle schema definitions
-│   └── index.ts          # Database client
-├── lib/                  # Utility libraries
-│   ├── auth.ts          # Better Auth server config
-│   ├── auth-client.ts   # Better Auth client
-│   └── utils.ts         # Shared utilities
-├── modules/              # Feature modules
-│   ├── auth/            # Authentication module
-│   ├── dashboard/       # Dashboard module
-│   └── todos/           # Todos module
-├── drizzle/             # Database migrations
-│   └── migrations/      # SQL migration files
-└── .github/             # GitHub Actions workflows
-    └── workflows/
-```
-
-## Prerequisites
-
-- **Node.js** 20 or higher
-- **pnpm** (install with `npm install -g pnpm`)
-- **Cloudflare Account** (free tier available)
-- **Google OAuth Credentials** (optional, for authentication)
-
-## Getting Started
-
-### 1. Clone and Install
-
-```bash
-git clone <your-repo-url>
-cd vibe-cooking
-pnpm install
-```
-
-### 2. Environment Setup
-
-Copy the environment variable templates:
-
-```bash
-cp .env.example .env
+```sh
+npm install
+# First setup only; preserve an existing .dev.vars.
 cp .dev.vars.example .dev.vars
+npm run token:create
+# Put the generated value in API_TOKEN in .dev.vars.
+npm run db:migrate:local
+npm run dev
 ```
 
-Update the following variables in both files:
+Open http://localhost:3000. `/api/health` is public liveness; all data endpoints require `Authorization: Bearer <API_TOKEN>`. Same-origin browser requests work by default; a separate frontend needs one exact `ALLOWED_ORIGIN` in `.dev.vars`/Worker variables. No wildcard or file:// origins. Never use `NEXT_PUBLIC_API_TOKEN` or commit a real token.
 
-**Cloudflare Configuration:**
-- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-- `CLOUDFLARE_D1_DATABASE_ID` - D1 database ID (create one first)
-- `CLOUDFLARE_D1_TOKEN` - API token with D1 permissions
-- `CLOUDFLARE_R2_URL` - R2 bucket public URL
+`next dev` uses OpenNext's local Cloudflare bindings. A second standalone Wrangler server is not needed. `npm run preview` builds and runs the Worker locally for runtime checks. Nothing here deploys automatically.
 
-**Authentication:**
-- `BETTER_AUTH_SECRET` - Random secret key (generate with `openssl rand -base64 32`)
-- `GOOGLE_CLIENT_ID` - Google OAuth client ID
-- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+## Start with two examples, or import the earlier catalogue
 
-### 3. Cloudflare Setup
+The included `examples/catalogue.json` contains two three-portion recipe drafts and their ingredients. These are not kitchen-tested.
 
-#### Create D1 Database
+```sh
+# Validate only: does not contact a server or write data.
+npm run catalogue:import
 
-```bash
-wrangler d1 create vibe-cooking-db
+# In a terminal with the same API_TOKEN as .dev.vars (input is not echoed):
+read -r -s API_TOKEN
+export API_TOKEN
+# Local dev server must already be running. Only this explicit flag writes data.
+npm run catalogue:import -- --apply
+
+# Alternatively, point to backend/seed from the earlier foundation ZIP:
+npm run catalogue:import -- /absolute/path/to/backend/seed
+npm run catalogue:import -- /absolute/path/to/backend/seed --apply
 ```
 
-Copy the database ID to your environment files.
+The importer validates the entire ingredient graph and every recipe before writing; preflights existing records; preserves stable IDs; and refuses to overwrite differing content. An interrupted import can be rerun. It is additive, not an atomic replace/restore operation. `KITCHEN_URL` defaults to localhost:3000; nonlocal targets require HTTPS. It imports **ingredients and recipes only**, not the earlier remixes or prep sessions.
 
-#### Create R2 Bucket
+## Implemented API
 
-```bash
-wrangler r2 bucket create vibe-cooking-storage
+See [docs/API.md](docs/API.md) for bodies and concurrency rules.
+
+- Ingredients: list and create immutable catalogue entries with compound-ingredient references.
+- Recipes: create, retrieve, paginate, search, update, archive/unarchive and inspect immutable revisions.
+- Personal preferences: store likes, exclusions, default portions and time preference.
+- Favourites: preserve an exact viewed recipe version and supported serving profile.
+- Cooking notes: one revision-protected note/verdict per recipe.
+
+Preferences are **stored but not applied automatically** to recipe discovery in this slice. The list endpoint accepts only documented filters and rejects unsupported filters; it is not a dietary/allergen safety or recommendation service. Ingredient entries are immutable for now to avoid invalidating dependent recipes. Use a new ID for a changed ingredient definition.
+
+## Maintenance
+
+`db/schema.ts` describes the query model. **Wrangler is the only migration runner.** Migrations are reviewed SQL in `drizzle/migrations`; recipe history uses SQLite triggers, so schema generation alone is insufficient.
+
+```sh
+npm run db:migration:new -- describe_change
+# Edit the new SQL and update db/schema.ts together; never rewrite an applied migration.
+npm run db:migrate:local
+npm test
 ```
 
-Get the public URL from the Cloudflare dashboard under R2 → your bucket → Settings.
+There is deliberately no `drizzle-kit push` or second migration journal. This initial migration creates only `kitchen_*` tables; it does not drop/alter legacy `user`, `session`, `account`, `verification` or `todo` tables, nor the earlier standalone backend's tables. The unused auth helpers are removed from the source, not destructively migrated from a database.
 
-#### Run Database Migrations
+Recipe JSON is authoritative; SQL expression indexes project its mode/status. Edits require the latest ETag via `If-Match`. A compare-and-swap update and database triggers record revisions atomically. History is immutable. DELETE archives recipes. Favourites do not silently advance to a newer version. There is no general data-restore or account-deletion API yet.
 
-```bash
-# Generate migration files
-pnpm run db:generate
+## Tests and build
 
-# Apply migrations locally
-pnpm run db:migrate:local
-
-# Apply migrations to production
-pnpm run db:migrate:remote
+```sh
+npm run typecheck
+npm test
+npm run lint
+npm run catalogue:import
+npm run deploy:check
 ```
 
-### 4. Google OAuth Setup (Optional)
+Tests cover auth, body limits, origins, validation, real SQLite migrations, Drizzle's D1 adapter, recipe history, stale edits, notes, preferences and snapshot saves. The SQLite adapter is **not** workerd or remote D1. Passing source tests does not prove a live deployment or recipe quality.
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Navigate to "APIs & Services" → "Credentials"
-4. Create OAuth 2.0 Client ID
-5. Add authorized redirect URIs:
-   - `http://localhost:3000/api/auth/callback/google` (local)
-   - `https://your-domain.com/api/auth/callback/google` (production)
-6. Copy the Client ID and Secret to your `.env` files
+The initial repo had no lockfile. CI can resolve dependencies once and upload `dependency-lock`; review and commit package-lock.json, then CI uses npm ci. The manual deployment workflow requires that lockfile. Direct dependency pins were chosen against current OpenNext/Next documentation; review transitive audit findings before exposing an instance publicly.
 
-### 5. Development
+## Cloudflare deployment — manual
 
-The project uses a dual-server setup for optimal development:
-
-**Terminal 1 - Wrangler Dev Server:**
-```bash
-pnpm run wrangler:dev
-```
-This provides access to D1, R2, and other Cloudflare services.
-
-**Terminal 2 - Next.js Dev Server:**
-```bash
-pnpm run dev
-```
-This runs Next.js with hot module reloading on http://localhost:3000
-
-### 6. Database Management
-
-```bash
-# Generate new migrations after schema changes
-pnpm run db:generate
-
-# Apply migrations locally
-pnpm run db:migrate:local
-
-# Apply migrations to production
-pnpm run db:migrate:remote
-
-# Open Drizzle Studio (database GUI)
-pnpm run db:studio:local
+```sh
+npx wrangler login
+npx wrangler d1 create vibe-cooking-db
+# Set the returned database_id in wrangler.jsonc (not a secret).
+npm run db:migrate:remote
+npx wrangler secret put API_TOKEN
+npm run deploy
 ```
 
-## Available Scripts
+The all-zero database ID is a **local bootstrap placeholder**. The deploy/migrate guard refuses it for remote commands. This repository change does not create or modify your Cloudflare resources. Do not enable public recipe access: without a valid secret, data endpoints fail closed. The homepage/health remain public. Protect any future browser admin with a proper private access flow rather than embedding the bearer token in its bundle.
 
-- `pnpm dev` - Start Next.js development server
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run Biome linter
-- `pnpm format` - Format code with Biome
-- `pnpm wrangler:dev` - Start Wrangler dev server
-- `pnpm db:generate` - Generate database migrations
-- `pnpm db:migrate:local` - Apply migrations locally
-- `pnpm db:migrate:remote` - Apply migrations to production
-- `pnpm db:studio:local` - Open Drizzle Studio
-- `pnpm deploy` - Deploy to Cloudflare Pages
+Deployment through GitHub Actions is manual, default-branch-only, requires `DEPLOY`, a `production` environment, a committed lockfile, and your Cloudflare CLI credentials in GitHub environment secrets. The runtime API_TOKEN is separately configured on the Worker. Migrations are never auto-applied on PRs or deployment.
 
-## Deployment
+Back up before database changes:
 
-### GitHub Actions (Recommended)
-
-The repository includes automated CI/CD workflows:
-
-1. **CI Workflow** - Runs on all PRs and commits
-   - Linting with Biome
-   - TypeScript type checking
-
-2. **Deploy Workflow** - Deploys to Cloudflare Pages
-   - Automatic preview deployments for PRs
-   - Production deployment on main branch
-
-**Required GitHub Secrets:**
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `NEXT_PUBLIC_APP_URL`
-
-### Manual Deployment
-
-```bash
-# Build and deploy to Cloudflare Pages
-pnpm run deploy
+```sh
+mkdir -p backups
+npm run db:export:remote
 ```
 
-## Adding shadcn/ui Components
+The export is a database SQL backup, not the prototype's JSON backup format. Choose timestamped paths for successive backups and test restore into a separate D1 database. Secrets and backups are ignored by Git.
 
-```bash
-# Install shadcn CLI globally
-pnpm add -g shadcn-ui
+## Deliberately later
 
-# Add components
-npx shadcn-ui@latest add button
-npx shadcn-ui@latest add card
-npx shadcn-ui@latest add form
-```
+MealSpin v2 screen integration; an in-browser editor; full 24-recipe catalogue loading by default; automatic preference filtering/ranking; version-pinned remix links; shared prep sessions; image uploads; accounts and public submissions. Keeping these separate makes this first foundation easier to inspect.
 
-## Project Architecture
+## Technical references
 
-This template uses a **module-sliced architecture** for better organization:
+- OpenNext setup: https://opennext.js.org/cloudflare/get-started
+- OpenNext Cloudflare bindings: https://opennext.js.org/cloudflare/bindings
+- D1/Drizzle: https://orm.drizzle.team/docs/connect-cloudflare-d1
+- Wrangler migrations: https://developers.cloudflare.com/d1/reference/migrations/
+- Next.js security release baseline: https://nextjs.org/blog (August 2026 release: 15.5.24 / 16.3.3)
 
-```
-modules/
-└── feature-name/
-    ├── actions/      # Server Actions
-    ├── components/   # Feature-specific components
-    ├── schemas/      # Zod validation schemas
-    └── models/       # TypeScript types
-```
-
-### Example Module Structure
-
-```typescript
-modules/
-└── todos/
-    ├── actions/
-    │   └── todo-actions.ts       # Server Actions for todos
-    ├── components/
-    │   ├── todo-list.tsx         # Todo list component
-    │   └── todo-item.tsx         # Todo item component
-    ├── schemas/
-    │   └── todo-schema.ts        # Zod schemas for validation
-    └── models/
-        └── todo-types.ts         # TypeScript types
-```
-
-## Database Schema
-
-The template includes pre-configured tables for Better Auth:
-
-- `user` - User accounts
-- `session` - User sessions
-- `account` - OAuth provider accounts
-- `verification` - Email verification tokens
-- `todo` - Example application table
-
-Modify `db/schema.ts` to add your own tables.
-
-## Best Practices
-
-### Type Safety
-- Use Drizzle ORM for type-safe database queries
-- Define Zod schemas for runtime validation
-- Keep TypeScript strict mode enabled
-
-### Authentication
-- Use Better Auth for secure authentication
-- Implement proper session management
-- Add CSRF protection for forms
-
-### Performance
-- Leverage React Server Components
-- Use edge functions for global performance
-- Implement proper caching strategies
-
-### Code Quality
-- Format code with Biome before committing
-- Write meaningful commit messages
-- Keep components small and focused
-
-## Troubleshooting
-
-### Wrangler Issues
-```bash
-# Clear Wrangler cache
-rm -rf .wrangler
-
-# Re-authenticate
-wrangler login
-```
-
-### Database Migration Errors
-```bash
-# Reset local database
-rm -rf .wrangler/state
-
-# Re-run migrations
-pnpm run db:migrate:local
-```
-
-### Build Errors
-```bash
-# Clear Next.js cache
-rm -rf .next
-
-# Reinstall dependencies
-rm -rf node_modules
-pnpm install
-```
-
-## Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Cloudflare Workers](https://developers.cloudflare.com/workers/)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [Better Auth](https://www.better-auth.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [TailwindCSS](https://tailwindcss.com/)
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+Original repository base: `009d01dc9f3ce16236e10aafbddcfbfc1b98fb5b`. No production deployment is implied by this bootstrap.

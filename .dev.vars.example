@@ -1,7 +1,5 @@
-# Local development environment variables for Wrangler
-CLOUDFLARE_ACCOUNT_ID=your-account-id
-CLOUDFLARE_D1_TOKEN=your-d1-token
-BETTER_AUTH_SECRET=your-secret-key-here
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-CLOUDFLARE_R2_URL=https://your-r2-bucket.r2.dev
+NEXTJS_ENV=development
+# Generate with npm run token:create; never commit .dev.vars.
+API_TOKEN=REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS
+# Same-origin requests work by default. Set one exact origin only for a separate client.
+# ALLOWED_ORIGIN=http://localhost:5173

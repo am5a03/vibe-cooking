@@ -1,97 +1,33 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { createId } from "@paralleldrive/cuid2";
+import { sql } from 'drizzle-orm';
+import { check, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-// Users table for Better Auth
-export const users = sqliteTable("user", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: integer("emailVerified", { mode: "boolean" }).notNull().default(false),
-  image: text("image"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
+const timestamp = () => text().notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`);
+// JSON documents are authoritative; SQL indexes project searchable fields.
+export const ingredients = sqliteTable('kitchen_ingredients', {
+  id: text().primaryKey(), document: text().notNull(), createdAt: timestamp(),
 });
-
-// Sessions table for Better Auth
-export const sessions = sqliteTable("session", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  token: text("token").notNull().unique(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
+export const recipes = sqliteTable('kitchen_recipes', {
+  id: text().primaryKey(), document: text().notNull(), revision: integer().notNull().default(1),
+  createdAt: timestamp(), updatedAt: timestamp(),
+}, (t) => [
+  index('kitchen_recipes_mode').on(sql`json_extract(${t.document}, '$.mode')`, t.id),
+  index('kitchen_recipes_status').on(sql`json_extract(${t.document}, '$.status')`, t.id),
+  check('recipe_json', sql`json_valid(${t.document})`),
+  check('recipe_revision', sql`${t.revision} > 0`),
+]);
+export const recipeHistory = sqliteTable('kitchen_recipe_history', {
+  recipeId: text().notNull().references(() => recipes.id), revision: integer().notNull(),
+  document: text().notNull(), createdAt: timestamp(),
+}, (t) => [primaryKey({ columns: [t.recipeId, t.revision] })]);
+export const preferences = sqliteTable('kitchen_preferences', {
+  id: text().primaryKey(), document: text().notNull(), revision: integer().notNull().default(1),
+  updatedAt: timestamp(),
+}, (t) => [check('singleton_preferences', sql`${t.id} = 'default'`)]);
+export const favourites = sqliteTable('kitchen_favourites', {
+  recipeId: text().primaryKey().references(() => recipes.id), recipeRevision: integer().notNull(),
+  portions: integer().notNull(), snapshot: text().notNull(), createdAt: timestamp(),
 });
-
-// Accounts table for Better Auth (OAuth providers)
-export const accounts = sqliteTable("account", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: integer("accessTokenExpiresAt", { mode: "timestamp" }),
-  refreshTokenExpiresAt: integer("refreshTokenExpiresAt", { mode: "timestamp" }),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
-
-// Verification tokens table for Better Auth
-export const verifications = sqliteTable("verification", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
-
-// Example application table
-export const todos = sqliteTable("todo", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  title: text("title").notNull(),
-  description: text("description"),
-  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  createdAt: integer("createdAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
+export const notes = sqliteTable('kitchen_notes', {
+  recipeId: text().primaryKey().references(() => recipes.id), document: text().notNull(),
+  revision: integer().notNull().default(1), updatedAt: timestamp(),
 });
