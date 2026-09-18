@@ -14,7 +14,7 @@ writeFileSync(configPath, JSON.stringify({
   compatibility_date: '2026-09-17', compatibility_flags: ['nodejs_compat'],
   assets: { binding: 'ASSETS', directory: resolve('.open-next/assets') },
   services: [{ binding: 'WORKER_SELF_REFERENCE', service: 'vibe-cooking-test' }],
-  vars: { API_TOKEN: token },
+  vars: { API_TOKEN: token, KITCHEN_ORIGIN: 'http://127.0.0.1:8787' },
   d1_databases: [{ binding: 'DB', database_name: 'kitchen-e2e', database_id: '00000000-0000-0000-0000-000000000000', migrations_dir: resolve('drizzle/migrations'), remote: false }],
 }));
 const env = { ...process.env, KITCHEN_TEST_TOKEN: token, KITCHEN_TEST_CONFIG: configPath, KITCHEN_TEST_STATE: statePath, WRANGLER_SEND_METRICS: 'false' };
