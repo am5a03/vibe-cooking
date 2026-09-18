@@ -16,7 +16,9 @@ npm run db:migrate:local
 npm run dev
 ```
 
-Preserve `.dev.vars`, API_TOKEN, KITCHEN_ORIGIN and your database configuration. Migration 0003 adds remix connections and guards only. No re-import is required. For an optional ten-recipe expansion, first run the read-only import preview described in [Discovery and Remix](docs/DISCOVERY-REMIX.md). The pack never reuses the starter recipe IDs and does not automatically approve connections.
+Preserve `.dev.vars`, API_TOKEN, KITCHEN_ORIGIN and your database configuration. Your PR #7 baseline remains `0003_drizzle_baseline.sql`. Migrations `0004_recipe_remixes.sql` and `0005_recipe_remix_guards.sql` add the remix table and its custom guards, with generated Drizzle metadata. No re-import is required. For an optional ten-recipe expansion, first run the read-only import preview described in [Discovery and Remix](docs/DISCOVERY-REMIX.md). The pack never reuses the starter recipe IDs and does not automatically approve connections.
+
+An earlier checkout of this PR used `0003_recipe_remixes.sql`. The replacement migrations also support a database where that exact preview was already applied, preserving existing connections. Do not delete data or edit `d1_migrations`. See [migration compatibility](docs/DRIZZLE-REMIX-UPGRADE.md).
 
 ## Original connected-kitchen setup
 
@@ -76,7 +78,7 @@ The browser runner creates a temporary Wrangler config, ephemeral key and isolat
 
 The browser suites cover saving a recipe version, editing notes and recipes, reload persistence, independent copies, preference edits, narrow-screen layout, logout, ingredient/recipe creation, stale-edit recovery and retaining an unsaved draft through a revoked session. Unit tests cover API/session validation and editor data integrity. Passing tests are not a food-safety review.
 
-CI runs these checks, a high-severity dependency-audit gate, and a Worker packaging dry run. It uploads `dependency-lock` and `kitchen-browser-results` artifacts. The reviewed package-lock.json pins dependencies; use npm ci. Review dependency updates as code changes. Deployment remains guarded and manual.
+CI runs these checks, validates the Drizzle journal and schema/snapshot parity, checks the old-preview upgrade on isolated local D1, runs a high-severity dependency-audit gate, and a Worker packaging dry run. It uploads `dependency-lock` and `kitchen-browser-results` artifacts. The reviewed package-lock.json pins dependencies; use npm ci. Review dependency updates as code changes. Deployment remains guarded; the existing main-branch workflow deploys on merge. Apply reviewed remote migrations before merging a database change.
 
 ## Boundaries
 

@@ -40,6 +40,9 @@ jobs:
       - name: Check Drizzle migration metadata
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run db:migrations:check
+      - name: Check legacy preview upgrade on isolated local D1
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/check-migration-upgrade.mjs
       - name: Lint
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run lint

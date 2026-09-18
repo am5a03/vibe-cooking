@@ -140,7 +140,7 @@ export const remixes = sqliteTable(
     targetId: text('target_id').notNull(),
     sourceRevision: integer('source_revision').notNull(),
     targetRevision: integer('target_revision').notNull(),
-    axis: text('axis').notNull(),
+    axis: text('axis', { enum: ['main', 'flavor', 'method'] }).notNull(),
     revision: integer('revision').notNull().default(1),
     createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
     updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),

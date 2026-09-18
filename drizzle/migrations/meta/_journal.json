@@ -8,6 +8,20 @@
       "when": 1789715199236,
       "tag": "0003_drizzle_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789716511765,
+      "tag": "0004_recipe_remixes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789716512458,
+      "tag": "0005_recipe_remix_guards",
+      "breakpoints": true
     }
   ]
 }

@@ -4,9 +4,11 @@ This is a single-kitchen feature, not unrestricted recipe generation. It uses th
 
 ## Upgrade
 
-Keep `.dev.vars`, API_TOKEN, KITCHEN_ORIGIN and the existing D1 configuration/state. Switch to this feature branch, install the locked dependencies, and apply migration `0003_recipe_remixes.sql` with `npm run db:migrate:local`. Use reviewed remote migrations only for an actual remote instance. Do not reset or re-seed a kitchen to enable these screens.
+Keep `.dev.vars`, API_TOKEN, KITCHEN_ORIGIN and the existing D1 configuration/state. Switch to this feature branch, install the locked dependencies, and apply the pending migrations (`0003_drizzle_baseline.sql`, `0004_recipe_remixes.sql`, and `0005_recipe_remix_guards.sql`) with `npm run db:migrate:local`. Use reviewed remote migrations only for an actual remote instance. Do not reset or re-seed a kitchen to enable these screens.
 
-The migration creates a connection table and validation triggers only. It does not update recipes, ingredients, preferences, notes, saved versions or previous migrations.
+The PR #7 baseline remains a no-op. The next two migrations create a connection table and validation triggers only. They do not update recipes, ingredients, preferences, notes, saved versions or previous migrations.
+
+Older preview databases that already applied `0003_recipe_remixes.sql` can run the new migrations without resetting their reviewed connections. See [Drizzle integration and upgrade checks](DRIZZLE-REMIX-UPGRADE.md).
 
 ## Two different entry points
 

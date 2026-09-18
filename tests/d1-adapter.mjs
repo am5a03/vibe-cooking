@@ -1,12 +1,14 @@
 // Real SQLite plus the methods consumed by Drizzle's D1 driver; not workerd/remote D1.
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 export class TestD1 {
   constructor() {
     this.sqlite = new DatabaseSync(':memory:');
     this.sqlite.exec('PRAGMA foreign_keys=ON');
-    this.sqlite.exec(readFileSync(new URL('../drizzle/migrations/0001_kitchen.sql', import.meta.url), 'utf8'));
-    this.sqlite.exec(readFileSync(new URL('../drizzle/migrations/0003_recipe_remixes.sql', import.meta.url), 'utf8'));
+    const directory = new URL('../drizzle/migrations/', import.meta.url);
+    for (const name of readdirSync(directory).filter((file) => file.endsWith('.sql')).sort()) {
+      this.sqlite.exec(readFileSync(new URL(name, directory), 'utf8'));
+    }
   }
   prepare(sql) { return new Statement(this, sql); }
   close() { this.sqlite.close(); }
