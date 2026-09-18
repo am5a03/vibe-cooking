@@ -38,6 +38,9 @@ jobs:
       - name: Test API, sessions and migrations
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
+      - name: Check Drizzle migration metadata
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run db:migrations:check
       - name: Lint
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run lint

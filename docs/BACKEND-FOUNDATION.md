@@ -60,13 +60,17 @@ Preferences are **stored but not applied automatically** to recipe discovery in 
 `db/schema.ts` describes the query model. **Wrangler is the only migration runner.** Migrations are reviewed SQL in `drizzle/migrations`; recipe history uses SQLite triggers, so schema generation alone is insufficient.
 
 ```sh
-npm run db:migration:new -- describe_change
-# Edit the new SQL and update db/schema.ts together; never rewrite an applied migration.
+# Edit db/schema.ts first, then generate the SQL + snapshot/journal metadata.
+npm run db:generate -- --name=describe_change
+# For triggers, data backfills, or other SQL Drizzle cannot model:
+npm run db:generate:custom -- --name=describe_change
+# Review generated SQL before applying it; never rewrite an applied migration.
+npm run db:migrations:check
 npm run db:migrate:local
 npm test
 ```
 
-There is deliberately no `drizzle-kit push` or second migration journal. This initial migration creates only `kitchen_*` tables; it does not drop/alter legacy `user`, `session`, `account`, `verification` or `todo` tables, nor the earlier standalone backend's tables. The unused auth helpers are removed from the source, not destructively migrated from a database.
+Drizzle Kit is the migration authoring tool and keeps its journal/snapshots under `drizzle/migrations/meta`; Wrangler remains the only migration runner for D1. Do not use `drizzle-kit push` or `drizzle-kit migrate` against this project, because production migration state is tracked by Wrangler. Migrations `0001` and `0002` predate Drizzle Kit metadata; `0003_drizzle_baseline.sql` is a no-op baseline whose snapshot represents the already-deployed schema, so generated migrations continue from `0004`. The recipe-history triggers in `0001_kitchen.sql` are custom SQLite objects that Drizzle snapshots do not model, so carefully review any generated migration that rebuilds `kitchen_recipes` or `kitchen_recipe_history` and preserve/recreate those triggers as needed. This initial migration creates only `kitchen_*` tables; it does not drop/alter legacy `user`, `session`, `account`, `verification` or `todo` tables, nor the earlier standalone backend's tables. The unused auth helpers are removed from the source, not destructively migrated from a database.
 
 Recipe JSON is authoritative; SQL expression indexes project its mode/status. Edits require the latest ETag via `If-Match`. A compare-and-swap update and database triggers record revisions atomically. History is immutable. DELETE archives recipes. Favourites do not silently advance to a newer version. There is no general data-restore or account-deletion API yet.
 
