@@ -44,6 +44,9 @@ jobs:
       - name: Validate starter catalogue without writing data
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run catalogue:import
+      - name: Audit dependencies
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm audit --audit-level=high
       - name: Build for Workers (no deployment)
         id: build
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}

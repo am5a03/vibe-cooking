@@ -17,33 +17,36 @@ export async function checkIngredients(db: KitchenDb, ids: string[]) {
   const unique = [...new Set(ids)];
   if (!unique.length) return;
   const rows = await db.select({ id: S.ingredients.id }).from(S.ingredients).where(inArray(S.ingredients.id, unique));
-  const existing = new Set(rows.map(r => r.id));
-  const missing = unique.filter(id => !existing.has(id));
+  const existing = new Set(rows.map((row) => row.id));
+  const missing = unique.filter((id) => !existing.has(id));
   if (missing.length) throw new ApiError(422, 'UNKNOWN_INGREDIENT', 'Create the referenced ingredients first.', { missing });
 }
-export function revisionChanged(rows: unknown[]) {
+export function revisionChanged<T>(rows: T[]): asserts rows is [T, ...T[]] {
   if (!rows.length) throw new ApiError(412, 'REVISION_CONFLICT', 'The record changed. Fetch it again and reconcile your edit.');
 }
 export async function updateRecipe(db: KitchenDb, id: string, revision: number, recipe: RecipeDocument) {
-  await checkIngredients(db, recipe.servings.flatMap(s => s.ingredients.map(i => i.ingredientId)));
+  await checkIngredients(db, recipe.servings.flatMap((serving) => serving.ingredients.map((item) => item.ingredientId)));
   const rows = await db.update(S.recipes).set({
     document: JSON.stringify(recipe), revision: revision + 1, updatedAt: new Date().toISOString(),
   }).where(and(eq(S.recipes.id, id), eq(S.recipes.revision, revision))).returning();
   revisionChanged(rows);
-  return rows[0]!;
+  return rows[0];
 }
 export async function listRecipes(db: KitchenDb, url: URL) {
-  const p = url.searchParams;
+  const params = url.searchParams;
   const allowed = ['limit', 'after', 'mode', 'main', 'status', 'q'];
-  for (const key of p.keys()) {
-    if (!allowed.includes(key) || p.getAll(key).length !== 1) throw new ApiError(400, 'INVALID_QUERY', `Unknown or repeated parameter: ${key}.`);
+  for (const key of params.keys()) {
+    if (!allowed.includes(key) || params.getAll(key).length !== 1) throw new ApiError(400, 'INVALID_QUERY', `Unknown or repeated parameter: ${key}.`);
   }
-  const raw = p.get('limit') ?? '20';
+  const raw = params.get('limit') ?? '20';
   if (!/^[0-9]+$/.test(raw) || +raw < 1 || +raw > 50) throw new ApiError(400, 'INVALID_QUERY', 'limit must be 1–50.');
-  const limit = +raw, after = p.get('after') ?? '';
+  const limit = +raw;
+  const after = params.get('after') ?? '';
   if (after && !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(after)) throw new ApiError(400, 'INVALID_QUERY', 'Invalid cursor.');
   const filters = [gt(S.recipes.id, after)];
-  const mode = p.get('mode'), main = p.get('main'), status = p.get('status') ?? 'active';
+  const mode = params.get('mode');
+  const main = params.get('main');
+  const status = params.get('status') ?? 'active';
   if (mode !== null && !['breakfast', 'dinner'].includes(mode)) throw new ApiError(400, 'INVALID_QUERY', 'Invalid meal mode.');
   if (!['active', 'archived', 'all'].includes(status)) throw new ApiError(400, 'INVALID_QUERY', 'Invalid status.');
   if (mode) filters.push(sql`json_extract(${S.recipes.document}, '$.mode') = ${mode}`);
@@ -52,12 +55,11 @@ export async function listRecipes(db: KitchenDb, url: URL) {
     filters.push(sql`json_extract(${S.recipes.document}, '$.main') = ${main}`);
   }
   if (status !== 'all') filters.push(sql`json_extract(${S.recipes.document}, '$.status') = ${status}`);
-  const q = p.get('q');
-  if (q !== null) {
-    if (q.length > 120) throw new ApiError(400, 'INVALID_QUERY', 'Search is limited to 120 characters.');
-    // instr treats %, _ and quotes literally, not as wildcard or SQL syntax.
-    filters.push(sql`instr(lower(json_extract(${S.recipes.document}, '$.title')), lower(${q})) > 0`);
+  const query = params.get('q');
+  if (query !== null) {
+    if (query.length > 120) throw new ApiError(400, 'INVALID_QUERY', 'Search is limited to 120 characters.');
+    filters.push(sql`instr(lower(json_extract(${S.recipes.document}, '$.title')), lower(${query})) > 0`);
   }
   const rows = await db.select().from(S.recipes).where(and(...filters)).orderBy(S.recipes.id).limit(limit + 1);
-  return { items: rows.slice(0, limit).map(decode), nextAfter: rows.length > limit ? rows[limit - 1]!.id : null };
+  return { items: rows.slice(0, limit).map(decode), nextAfter: rows.length > limit ? rows[limit - 1].id : null };
 }
