@@ -412,7 +412,7 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
                 {serving.ingredients.map((line, index) => (
                   <Label
                     className={cn(
-                      "ingredient-check flex w-full items-start gap-3 border-b py-3 text-sm font-normal leading-relaxed last:border-0 [&>span:first-of-type]:min-w-0 [&>span:first-of-type]:flex-1 [&_small]:block",
+                      "flex w-full items-start gap-3 border-b py-3 text-sm font-normal leading-relaxed last:border-0 [&>span:first-of-type]:min-w-0 [&>span:first-of-type]:flex-1 [&_small]:block",
                       checked.has(index) && "[&>span]:text-muted-foreground [&>span]:line-through",
                     )}
                     key={`${index}-${line.ingredientId}`}

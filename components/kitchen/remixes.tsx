@@ -47,7 +47,7 @@ export function Comparison({
     entries.find((entry) => entry.id === id)?.ingredient.name ?? label(id);
   return (
     <div className="min-w-0">
-      <div className="comparison-meals grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="min-w-0 gap-0 rounded-xl border-0 bg-secondary/35 p-5 shadow-none last:bg-secondary/70">
           <span className="text-[10px] font-bold uppercase tracking-[.17em] text-muted-foreground">
             The familiar starting point
@@ -96,7 +96,6 @@ export function Comparison({
         {differences.map((item) => (
           <li
             key={`${item.ingredientId}-${item.role}`}
-            className={`diff-${item.kind}`}
             data-change={item.kind}
           >
             <Badge className="shrink-0 text-[10px] uppercase" variant="secondary">
@@ -138,7 +137,7 @@ export function Comparison({
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4">
-          <div className="comparison-meals grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {[before, after].map((profile, index) => (
               <section
                 className="min-w-0 rounded-lg bg-secondary/40 p-4"
@@ -313,7 +312,7 @@ export function RemixPanel({ source, portions }: { source: MealSnapshot; portion
                       <Button
                         type="button"
                         key={item.connectionId}
-                        className="remix-option h-auto min-h-32 min-w-0 flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-5 text-left font-normal aria-pressed:border-primary aria-pressed:bg-secondary [&>strong]:font-serif [&>strong]:text-xl [&>span:last-child]:inline-flex [&>span:last-child]:items-center [&>span:last-child]:gap-2 [&>span:last-child]:text-xs"
+                        className="h-auto min-h-32 min-w-0 flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-5 text-left font-normal aria-pressed:border-primary aria-pressed:bg-secondary [&>strong]:font-serif [&>strong]:text-xl [&>span:last-child]:inline-flex [&>span:last-child]:items-center [&>span:last-child]:gap-2 [&>span:last-child]:text-xs"
                         aria-pressed={selected === item.connectionId}
                         onClick={() => setSelected(item.connectionId)}
                         variant="outline"
@@ -536,7 +535,7 @@ export function VariationManager({ id }: { id: string }) {
                     <p className="mb-5 break-words text-sm leading-relaxed text-muted-foreground">
                       <Badge
                         className={cn(
-                          "review-badge text-xs",
+                          "text-xs",
                           connection.stale && "bg-[#f7eddf] text-[#835127]",
                         )}
                         variant="secondary"
@@ -609,7 +608,7 @@ export function VariationManager({ id }: { id: string }) {
                 .map((candidate) => (
                   <Button
                     type="button"
-                    className="remix-option h-auto min-h-32 min-w-0 flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-5 text-left font-normal aria-pressed:border-primary aria-pressed:bg-secondary [&>strong]:font-serif [&>strong]:text-xl [&>span:last-child]:inline-flex [&>span:last-child]:items-center [&>span:last-child]:gap-2 [&>span:last-child]:text-xs"
+                    className="h-auto min-h-32 min-w-0 flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-5 text-left font-normal aria-pressed:border-primary aria-pressed:bg-secondary [&>strong]:font-serif [&>strong]:text-xl [&>span:last-child]:inline-flex [&>span:last-child]:items-center [&>span:last-child]:gap-2 [&>span:last-child]:text-xs"
                     key={candidate.target.id}
                     disabled={busy}
                     onClick={() => select(candidate)}

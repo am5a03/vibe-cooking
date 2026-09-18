@@ -30,7 +30,7 @@ test('private cookbook: save, note, duplicate, edit and reload through real loca
   await page.getByLabel('Private kitchen key').fill(key);
   await page.getByRole('button', { name: 'Unlock my kitchen' }).click();
   await expect(page.getByRole('heading', { name: 'What sounds good?' })).toBeVisible();
-  await expect(page.locator('.recipe-card')).toHaveCount(2);
+  await expect(page.locator('[data-kitchen-recipe-card]')).toHaveCount(2);
   await page.screenshot({ path: 'test-results/kitchen-desktop.png', fullPage: true });
   await page.getByRole('button', { name: original.recipe.title, exact: true }).click();
   await page.getByRole('button', { name: 'Save this version', exact: true }).click();
@@ -60,7 +60,7 @@ test('private cookbook: save, note, duplicate, edit and reload through real loca
   await page.reload(); await expect(page.getByLabel('Breakfast portions', { exact: true })).toHaveValue('2');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'All recipes', exact: true }).click();
-  await expect(page.locator('.recipe-card')).toHaveCount(3);
+  await expect(page.locator('[data-kitchen-recipe-card]')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/kitchen-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Lock', exact: true }).click();

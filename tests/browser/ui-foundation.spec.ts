@@ -1,58 +1,61 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-// Fixture-only markup for the Phase 1 CSS coexistence contract; no new route.
-const fixture = '<section id="ui-foundation-fixture" class="panel">' +
-  '<h2 id="legacy-heading">Legacy kitchen heading</h2>' +
-  '<p id="legacy-copy">Legacy muted text</p>' +
-  '<button id="legacy-control" type="button" class="button primary">Legacy action</button>' +
-  '<input id="legacy-input" aria-label="Legacy input" />' +
-  '<div data-slot="card" id="new-card" class="rounded-xl border bg-card p-6 text-card-foreground">' +
-  '<h2 id="new-heading" class="font-sans text-xl font-semibold">Primitive heading</h2>' +
-  '<p id="new-copy" class="text-sm text-muted-foreground">Primitive description</p>' +
-  '<button id="new-control" data-slot="button" type="button" class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">New action</button>' +
-  '<input id="new-input" data-slot="input" aria-label="New input" class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base md:text-sm" />' +
-  '<button id="nested-collision" type="button" class="button primary">Legacy class inside primitive</button>' +
-  '<div id="muted-surface" data-slot="skeleton" class="h-4 animate-pulse bg-muted"></div>' +
-  '</div><div id="hidden-region" hidden><div data-slot="card" class="flex">Must stay hidden</div></div></section>';
-const portal = '<div id="portal-fixture" data-slot="popover-content" class="rounded-lg border bg-popover p-4 text-popover-foreground">Body-mounted content</div>' +
-  '<button id="outside-collision" type="button" class="button primary">Outside kitchen</button>';
+// Real unlock components cover the semantic theme. These small probes exercise
+// native hidden/focus rules and root inheritance outside the kitchen/any data-slot.
+const probes = `<div id="portal-probe" class="rounded-lg border bg-popover p-4 text-popover-foreground">Body-mounted content</div>
+  <div id="hidden-probe" hidden class="flex"><button type="button">Hidden action</button></div>
+  <button id="focus-probe" type="button">Native focus fallback</button>
+  <div id="motion-probe" class="h-5 animate-pulse bg-muted transition-all before:animate-pulse before:content-['']"></div>`;
 
-test('UI foundation: legacy parity, primitive isolation and root portal theme', async ({ page }, testInfo) => {
-  await page.goto('/');
-  await expect(page.getByLabel('Private kitchen key', { exact: true })).toBeVisible();
-  await page.locator('.kitchen-app').evaluate((element, html) => element.insertAdjacentHTML('beforeend', html), fixture);
-  await page.locator('body').evaluate((element, html) => element.insertAdjacentHTML('beforeend', html), portal);
-
+test("the final theme, hidden content, native focus and reduced motion work without legacy CSS", async ({
+  page,
+}, info) => {
+  await page.goto("/");
+  const region = page.getByRole("region", { name: "Come on in." });
+  const input = region.getByLabel("Private kitchen key");
+  await expect(input).toBeVisible();
+  await page
+    .locator("body")
+    .evaluate((element, html) => element.insertAdjacentHTML("beforeend", html), probes);
   for (const width of [1360, 390]) {
     await page.setViewportSize({ width, height: 960 });
-    await expect(page.locator('#legacy-input')).toHaveCSS('min-height', '43px');
-    await expect(page.locator('#legacy-control')).toHaveCSS('min-height', '42px');
-    await expect(page.locator('#legacy-control')).toHaveCSS('background-color', 'rgb(48, 94, 66)');
-    await expect(page.locator('#legacy-copy')).toHaveCSS('color', 'rgb(104, 115, 98)');
-    await expect(page.locator('#legacy-heading')).toHaveCSS('font-family', /Georgia/);
-    await expect(page.locator('#new-input')).toHaveCSS('min-height', '0px');
-    await expect(page.locator('#new-input')).toHaveCSS('height', '36px');
-    await expect(page.locator('#new-input')).toHaveCSS('padding-top', '4px');
-    await expect(page.locator('#new-input')).toHaveCSS('font-size', width < 768 ? '16px' : '14px');
-    await expect(page.locator('#new-control')).toHaveCSS('background-color', 'rgb(48, 94, 66)');
-    await expect(page.locator('#new-control')).toHaveCSS('color', 'rgb(255, 255, 255)');
-    await expect(page.locator('#new-control')).toHaveCSS('min-height', '0px');
-    await expect(page.locator('#new-heading')).toHaveCSS('font-family', /Arial/);
-    await expect(page.locator('#new-heading')).toHaveCSS('font-size', '20px');
-    await expect(page.locator('#new-copy')).toHaveCSS('margin-bottom', '0px');
-    await expect(page.locator('#nested-collision')).toHaveCSS('min-height', '0px');
-    await expect(page.locator('#outside-collision')).toHaveCSS('min-height', '0px');
-    await expect(page.locator('#muted-surface')).toHaveCSS('background-color', 'rgb(233, 237, 222)');
-    await expect(page.locator('#portal-fixture')).toHaveCSS('background-color', 'rgb(255, 254, 249)');
-    await expect(page.locator('#portal-fixture')).toHaveCSS('color', 'rgb(40, 62, 48)');
-    await expect(page.locator('#portal-fixture')).toHaveCSS('font-family', /Arial/);
-    await expect(page.locator('#hidden-region')).toHaveCSS('display', 'none');
-    await page.screenshot({ path: testInfo.outputPath(`foundation-${width}.png`), fullPage: true });
+    await expect(page.locator(".kitchen-app")).toHaveCSS("background-color", "rgb(248, 246, 238)");
+    await expect(region.locator('[data-slot="card"]')).toHaveCSS(
+      "background-color",
+      "rgb(255, 254, 249)",
+    );
+    await expect(input).toHaveCSS("height", "44px");
+    await expect(input).toHaveCSS("min-height", "0px");
+    await expect(input).toHaveCSS("font-size", width < 768 ? "16px" : "15px");
+    await expect(region.getByRole("button", { name: "Unlock my kitchen" })).toHaveCSS(
+      "background-color",
+      "rgb(48, 94, 66)",
+    );
+    await expect(page.locator("#portal-probe")).toHaveCSS("background-color", "rgb(255, 254, 249)");
+    await expect(page.locator("#portal-probe")).toHaveCSS("color", "rgb(40, 62, 48)");
+    await expect(page.locator("#portal-probe")).toHaveCSS("font-family", /Arial/);
+    await expect(page.locator("#hidden-probe")).toHaveCSS("display", "none");
+    await expect(page.getByRole("button", { name: "Hidden action" })).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath(`foundation-${width}.png`), fullPage: true });
   }
-  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-  await expect(page.locator('#portal-fixture')).toHaveCSS('background-color', 'rgb(255, 254, 249)');
-  await expect(page.locator('#muted-surface')).toHaveCSS('animation-name', 'none');
-  await page.locator('#new-control').focus();
-  await expect(page.locator('#new-control')).toHaveCSS('outline-style', 'none');
-  await expect(page.locator('#new-control')).not.toHaveCSS('box-shadow', 'none');
+  await page.locator("#focus-probe").focus();
+  await expect(page.locator("#focus-probe")).toHaveCSS("outline-style", "solid");
+  await expect(page.locator("#focus-probe")).toHaveCSS("outline-width", "3px");
+  await expect(page.locator("#focus-probe")).toHaveCSS("outline-color", "rgb(176, 122, 72)");
+  await expect(page.locator("#focus-probe")).toHaveCSS("outline-offset", "3px");
+  await input.focus();
+  await expect(input).toHaveCSS("outline-style", "none");
+  await expect(input).not.toHaveCSS("box-shadow", "none");
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await expect(page.locator("#portal-probe")).toHaveCSS("background-color", "rgb(255, 254, 249)");
+  await expect(page.locator("#motion-probe")).toHaveCSS("animation-name", "none");
+  await expect(page.locator("#motion-probe")).toHaveCSS("transition-property", "none");
+  expect(
+    await page
+      .locator("#motion-probe")
+      .evaluate((el) => getComputedStyle(el, "::before").animationName),
+  ).toBe("none");
+  await page.locator("#hidden-probe").evaluate((el) => el.removeAttribute("hidden"));
+  await expect(page.locator("#hidden-probe")).toHaveCSS("display", "flex");
+  await expect(page.getByRole("button", { name: "Hidden action" })).toBeVisible();
 });

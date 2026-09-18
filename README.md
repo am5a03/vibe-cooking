@@ -2,6 +2,15 @@
 
 A single-user recipe studio on Next.js, Cloudflare Workers/OpenNext, D1 and Drizzle. Browse your real catalogue, save exact recipe versions, keep cooking notes, and create/edit recipes in the browser. No accounts, AI service or R2 bucket required.
 
+## UI architecture
+
+The interface uses source-owned shadcn/ui New York/Radix components with Tailwind 4
+and a single semantic kitchen theme. The five-phase UI migration is complete;
+legacy stylesheets and transitional class/color aliases are removed. See the
+[UI architecture and contribution guide](docs/UI.md) for component ownership,
+style/selector contracts, session-safe confirmations, and regression checks.
+This UI migration adds no environment variables or database migrations.
+
 ## Discover and Recipe Remix
 
 The kitchen now has separate **Discover** and **All recipes** views. Discover uses saved likes/exclusions and your selected meal, portion count, time ceiling and required ingredient. Recipe pages offer reviewed variations with an ingredient/step comparison. **Manage variations** lets you confirm connections yourself; recipe edits hide affected connections until you review them again.

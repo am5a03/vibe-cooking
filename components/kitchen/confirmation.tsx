@@ -71,7 +71,7 @@ function restoreFocus(opener: HTMLElement | null) {
     input.focus({ preventScroll: true });
     return;
   }
-  const heading = document.querySelector<HTMLElement>("main.workspace h1");
+  const heading = document.querySelector<HTMLElement>("main[data-kitchen-workspace] h1");
   if (available(heading)) {
     heading.setAttribute("tabindex", "-1");
     heading.focus({ preventScroll: true });

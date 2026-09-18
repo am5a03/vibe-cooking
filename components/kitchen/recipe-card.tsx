@@ -33,7 +33,7 @@ export function RecipeCard({
 }: RecipeCardProps) {
   return (
     <article className="min-w-0 h-full">
-      <Card className="recipe-card h-full gap-0 overflow-hidden rounded-2xl py-0 shadow-sm">
+      <Card data-kitchen-recipe-card className="h-full gap-0 overflow-hidden rounded-2xl py-0 shadow-sm">
         <DishArt recipe={recipe} />
         <CardContent className="flex flex-1 flex-col gap-4 p-6">
           <div className="flex flex-wrap items-center gap-2">
