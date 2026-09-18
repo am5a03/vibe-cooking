@@ -6,7 +6,7 @@ import postcss from 'postcss';
 import tailwind from '@tailwindcss/postcss';
 import { cn } from '../lib/utils.ts';
 
-const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('shadcn uses the CSS-first Tailwind 4 configuration and one stylesheet entry point', () => {
   const config = JSON.parse(read('components.json'));
@@ -38,8 +38,8 @@ test('semantic theme values and non-colliding legacy aliases live at the root', 
   assert.equal(theme.params, 'inline');
   const mappings = new Map(theme.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
   for (const name of ['background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground', 'primary', 'primary-foreground', 'secondary', 'secondary-foreground', 'muted', 'muted-foreground', 'accent', 'accent-foreground', 'destructive', 'destructive-foreground', 'border', 'input', 'ring']) {
-    assert.ok(values['--' + name], name);
-    assert.equal(mappings.get('--color-' + name), 'var(--' + name + ')');
+    assert.ok(values[`--${name}`], name);
+    assert.equal(mappings.get(`--color-${name}`), `var(--${name})`);
   }
 });
 
@@ -75,7 +75,7 @@ test('cn resolves Tailwind 4 utilities and caller overrides', () => {
 });
 
 test('the production PostCSS pipeline compiles semantic utilities, layers and animation CSS', async () => {
-  const source = read('app/globals.css') + '\n@source inline("bg-primary bg-card bg-muted bg-popover text-muted-foreground text-primary-foreground border-input ring-ring rounded-lg animate-in");\n';
+  const source = `${read('app/globals.css')}\n@source inline("bg-primary bg-card bg-muted bg-popover text-muted-foreground text-primary-foreground border-input ring-ring rounded-lg animate-in");\n`;
   const result = await postcss([tailwind({ base: resolve('.'), optimize: false })]).process(source, { from: resolve('app/globals.css') });
   const selectors = new Set();
   result.root.walkRules((rule) => selectors.add(rule.selector));
