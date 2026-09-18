@@ -1,6 +1,6 @@
 # Personal Kitchen API v1
 
-Origin-relative `/api`. JSON responses are `{data: ...}` or `{error:{code,message,requestId,details?}}`, never cacheable. All data requests require a private bearer token; only GET /api/health is public. The body limit is 128 KiB of actual UTF-8 bytes. Write JSON with Content-Type: application/json. API_TOKEN is not a user account or a browser login system.
+Origin-relative `/api`. JSON responses are `{data: ...}` or `{error:{code,message,requestId,details?}}`, never cacheable. Data requests require a private bearer token or an authenticated browser session; see BROWSER-ACCESS.md for the cookie and origin rules. GET /api/health is public liveness only. The body limit is 128 KiB of actual UTF-8 bytes. Write JSON with Content-Type: application/json. API_TOKEN is the personal credential, not a multi-user account system.
 
 | Endpoint | Method | Request / result |
 |---|---|---|
@@ -40,10 +40,14 @@ See `examples/catalogue.json` and `lib/kitchen/types.ts`. SchemaVersion is 1. A 
 }
 ```
 
-Preferences are saved, not automatically applied to the list endpoint. No hidden relaxation of filtering is performed: undocumented filters, including exclude/portions/maxMinutes, are rejected. A later recommendation service must resolve ingredient composition and enforce hard exclusions before ranking.
+Preferences are applied to Discover and remix suggestions, not automatically applied to the All recipes list endpoint. That list rejects undocumented filters, including exclude/portions/maxMinutes. The discovery and remix-options endpoints resolve recorded ingredient composition and apply hard exclusions before selection; they never relax exclusions to fill a result set.
 
 ## Expected failures
 
-400 invalid data/query; 401 missing/wrong bearer; 403 disallowed Origin; 404 absent record/version; 405 wrong method; 409 existing ID; 412 stale update; 413 body too large; 415 wrong content type; 422 unresolved ingredients; 428 missing If-Match; 503 missing secret/binding/setup. Generic 500s carry a request ID without leaking database contents or tokens.
+400 invalid data/query; 401 missing/wrong credential; 403 disallowed Origin; 404 absent record/version; 405 wrong method; 409 existing ID; 412 stale update; 413 body too large; 415 wrong content type; 422 unresolved ingredients; 428 missing If-Match; 503 missing secret/binding/setup. Generic 500s carry a request ID without leaking database contents or tokens.
 
 No bulk destructive import, public write route, user accounts, image fetcher, remote URL importer, prep planner, or recipe-generation endpoint is included. Use the validating CLI importer for additive catalogue growth.
+
+## Discovery and recipe variations
+
+See [Discovery and Remix](DISCOVERY-REMIX.md#api) for the authenticated discovery, remix-options and connection-management contracts. Preferences now affect these recommendation endpoints; the paginated recipe library deliberately retains its original unfiltered editing contract.

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Bookmark, Check, Clock3, Copy, Pencil, Users, Archive } from 'lucide-react';
 import { api, ClientError, errorText, label, type Snapshot, type Favourite, type Page, type Note } from '../../lib/kitchen/client';
+import { RemixPanel } from './remixes';
 import { DishArt, ErrorBox, Field, Loading, useDirty, useKitchen } from './shared';
 
 async function savedRecipe(id: string, signal: AbortSignal): Promise<Favourite> {
@@ -18,7 +19,7 @@ async function savedRecipe(id: string, signal: AbortSignal): Promise<Favourite> 
   }
 }
 export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
-  const { go, entries, setDirty } = useKitchen();
+  const { go, entries, setDirty, discovery } = useKitchen();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [tag, setTag] = useState<string | null>(null);
   const [portions, setPortions] = useState(0);
@@ -31,7 +32,8 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
   const [retry, setRetry] = useState(0);
   const [checked, setChecked] = useState<Set<number>>(new Set());
   const dirty = initialNote !== '' && JSON.stringify(note) !== initialNote;
-  const request = useMemo(() => ({ id, saved, attempt: retry }), [id, saved, retry]);
+  const preferredPortions = discovery?.portions;
+  const request = useMemo(() => ({ id, saved, attempt: retry, preferredPortions }), [id, saved, retry, preferredPortions]);
   useDirty(dirty);
   useEffect(() => {
     const abort = new AbortController();
@@ -45,7 +47,7 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
       } else {
         const result = await api<Snapshot>(`/recipes/${request.id}`, { signal: abort.signal });
         if (abort.signal.aborted) return;
-        setSnapshot(result.data); setTag(result.tag); setPortions(result.data.recipe.servings[0]?.portions ?? 0);
+        setSnapshot(result.data); setTag(result.tag); setPortions(result.data.recipe.servings.some((profile) => profile.portions === request.preferredPortions) ? request.preferredPortions ?? 0 : result.data.recipe.servings[0]?.portions ?? 0);
       }
       const result = await api<{ note: Note; revision: number }>(`/recipes/${request.id}/note`, { signal: abort.signal });
       if (abort.signal.aborted) return;
@@ -81,6 +83,7 @@ export function RecipeDetail({ id, saved }: { id: string; saved: boolean }) {
     <ErrorBox message={error}/>{error && <button type="button" className="button small" onClick={reload}>Reload latest data</button>}
     <output className="save-status" style={{ display: 'block' }}>{notice}</output>
     {saved && <div className="notice">You’re viewing the exact version you saved. <button type="button" className="text-link" onClick={() => go(`recipe/${id}`)}>Open the current recipe</button></div>}
+    {!saved && recipe.status === 'active' && <RemixPanel key={`${snapshot.id}-${snapshot.revision}-${portions}`} source={snapshot} portions={portions}/>}
     <div className="detail-grid"><div>
       <DishArt recipe={recipe}/><div className="panel detail-summary">
         <div className="recipe-meta"><span><Clock3 size={16}/>~{serving?.totalMinutes} min total</span><span>{serving?.activeMinutes} min active</span><span><Users size={16}/>{portions} portions</span></div>

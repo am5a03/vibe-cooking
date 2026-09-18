@@ -9,6 +9,7 @@ test('create an ingredient and recipe, resolve stale edits, and retain a draft t
   await page.getByLabel('Private kitchen key').fill(key);
   await page.getByRole('button', { name: 'Unlock my kitchen' }).click();
   await expect(page.getByRole('heading', { name: 'What sounds good?' })).toBeVisible();
+  await page.getByRole('button', { name: 'All recipes', exact: true }).click();
   await page.getByRole('button', { name: 'Add a recipe', exact: true }).click();
   await page.getByLabel('Recipe title', { exact: true }).fill('A browser-created recipe');
   const details = page.locator('.ingredient-creator');

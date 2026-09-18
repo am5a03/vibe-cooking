@@ -1,13 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { handleBrowser } from '../lib/kitchen/browser-api.ts';
 import { TestD1 } from './d1-adapter.mjs';
 const key = '7d'.repeat(32);
 const origin = 'https://kitchen.example';
 function setup(t) {
   const DB = new TestD1();
-  DB.sqlite.exec(readFileSync(new URL('../drizzle/migrations/0002_browser_sessions.sql', import.meta.url), 'utf8'));
   t.after(() => DB.close());
   const env = { DB, API_TOKEN: key };
   const call = (path, method = 'GET', value = undefined, headers = {}) => handleBrowser(new Request(`${origin}/api/${path}`, { method, headers: { Origin: origin, 'X-Kitchen-Request': '1', ...(value === undefined ? {} : { 'Content-Type': 'application/json' }), ...headers }, ...(value === undefined ? {} : { body: JSON.stringify(value) }) }), env);

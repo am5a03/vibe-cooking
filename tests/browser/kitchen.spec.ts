@@ -59,7 +59,7 @@ test('private cookbook: save, note, duplicate, edit and reload through real loca
   await expect(page.getByRole('status').filter({ hasText: 'Preferences saved' })).toBeVisible();
   await page.reload(); await expect(page.getByLabel('Breakfast portions', { exact: true })).toHaveValue('2');
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: 'Recipes', exact: true }).click();
+  await page.getByRole('button', { name: 'All recipes', exact: true }).click();
   await expect(page.locator('.recipe-card')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/kitchen-mobile.png', fullPage: true });

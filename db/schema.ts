@@ -7,6 +7,7 @@ import {
   primaryKey,
   sqliteTable,
   text,
+  unique,
 } from 'drizzle-orm/sqlite-core';
 
 const timestamp = () =>
@@ -127,4 +128,30 @@ export const loginLimits = sqliteTable(
     resetsAt: integer().notNull(),
   },
   (t) => [index('kitchen_login_limits_expiry').on(t.resetsAt)],
+);
+
+// Explicit SQL names preserve the existing remix API's snake_case storage contract.
+// Review-concurrency triggers live in a custom SQL migration, not the snapshot.
+export const remixes = sqliteTable(
+  'kitchen_remixes',
+  {
+    id: text('id').primaryKey().notNull(),
+    sourceId: text('source_id').notNull(),
+    targetId: text('target_id').notNull(),
+    sourceRevision: integer('source_revision').notNull(),
+    targetRevision: integer('target_revision').notNull(),
+    axis: text('axis', { enum: ['main', 'flavor', 'method'] }).notNull(),
+    revision: integer('revision').notNull().default(1),
+    createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+    updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+  },
+  (t) => [
+    index('kitchen_remixes_target').on(t.targetId),
+    unique('kitchen_remixes_pair').on(t.sourceId, t.targetId),
+    check('remix_axis', sql`${t.axis} IN ('main','flavor','method')`),
+    check('remix_revision', sql`${t.revision} > 0`),
+    check('remix_canonical_pair', sql`${t.sourceId} < ${t.targetId}`),
+    foreignKey({ columns: [t.sourceId, t.sourceRevision], foreignColumns: [recipeHistory.recipeId, recipeHistory.revision] }),
+    foreignKey({ columns: [t.targetId, t.targetRevision], foreignColumns: [recipeHistory.recipeId, recipeHistory.revision] }),
+  ],
 );

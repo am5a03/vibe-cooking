@@ -83,6 +83,7 @@ export function RecipeEditor({ mode, id }: { mode: 'new' | 'edit' | 'duplicate';
   return <div className="editor">
     <button type="button" className="back-link" onClick={() => go(mode === 'edit' ? `recipe/${id}` : 'discover')}><ArrowLeft size={16}/>Back</button>
     <div className="page-heading"><div><span className="eyebrow">{mode === 'edit' ? 'A small change, a new revision' : mode === 'duplicate' ? 'A familiar anchor, your own experiment' : 'A fresh page in your cookbook'}</span><h1>{mode === 'edit' ? 'Make it ' : 'Something '}<em>{mode === 'edit' ? 'yours.' : 'worth keeping.'}</em></h1><p>{mode === 'duplicate' ? 'This becomes a separate recipe. The original will stay unchanged.' : 'Ingredients, instructions, and your own finishing touches.'}</p></div></div>
+    {mode === 'edit' && <div className="notice"><strong>Related variations</strong><p>Link reviewed recipes that change one flavour, main ingredient or cooking method. Save recipe edits first.</p><button type="button" className="button" disabled={dirty || busy} onClick={() => go(`variations/${id}`)}>Manage variations</button></div>}
     <ErrorBox message={error}/>
     {error && <div className="button-row"><button type="button" className="button small" onClick={copyDraft}><Copy size={15}/>Copy unsaved draft</button>{mode !== 'new' && <button type="button" className="button small" onClick={reload}>Reload latest recipe</button>}</div>}
     <output className="save-status" style={{ display: 'block' }}>{notice}</output>

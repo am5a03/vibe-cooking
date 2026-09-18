@@ -1,6 +1,7 @@
 'use client';
 import { cloneElement, createContext, useContext, useEffect, useId, type ReactElement, type ReactNode } from 'react';
 import { Leaf, Soup, Fish, EggFried, Bean, Wheat } from 'lucide-react';
+import type { DiscoveryConstraints } from '../../lib/kitchen/exploration-client';
 import { label, type IngredientEntry, type RecipeDocument } from '../../lib/kitchen/client';
 
 export const KitchenContext = createContext<{
@@ -8,7 +9,9 @@ export const KitchenContext = createContext<{
   refreshIngredients: () => Promise<void>;
   go: (route: string) => void;
   setDirty: (dirty: boolean) => void;
-}>({ entries: [], refreshIngredients: async () => {}, go: () => {}, setDirty: () => {} });
+  discovery: DiscoveryConstraints | null;
+  setDiscovery: (value: DiscoveryConstraints | null) => void;
+}>({ entries: [], refreshIngredients: async () => {}, go: () => {}, setDirty: () => {}, discovery: null, setDiscovery: () => {} });
 export const useKitchen = () => useContext(KitchenContext);
 export function useDirty(dirty: boolean) {
   const { setDirty } = useKitchen();
