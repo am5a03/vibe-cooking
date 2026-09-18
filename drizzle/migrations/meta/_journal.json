@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789715199236,
+      "tag": "0003_drizzle_baseline",
+      "breakpoints": true
+    }
+  ]
+}
