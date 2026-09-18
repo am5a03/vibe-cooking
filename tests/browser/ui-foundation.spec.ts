@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-// Fixture-only markup: no new route and no migrated product components in Phase 1.
+// Fixture-only markup for the Phase 1 CSS coexistence contract; no new route.
 const fixture = '<section id="ui-foundation-fixture" class="panel">' +
   '<h2 id="legacy-heading">Legacy kitchen heading</h2>' +
   '<p id="legacy-copy">Legacy muted text</p>' +
@@ -19,7 +19,7 @@ const portal = '<div id="portal-fixture" data-slot="popover-content" class="roun
 
 test('UI foundation: legacy parity, primitive isolation and root portal theme', async ({ page }, testInfo) => {
   await page.goto('/');
-  await expect(page.locator('.unlock-card')).toBeVisible();
+  await expect(page.getByLabel('Private kitchen key', { exact: true })).toBeVisible();
   await page.locator('.kitchen-app').evaluate((element, html) => element.insertAdjacentHTML('beforeend', html), fixture);
   await page.locator('body').evaluate((element, html) => element.insertAdjacentHTML('beforeend', html), portal);
 
