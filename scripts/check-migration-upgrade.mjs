@@ -38,7 +38,7 @@ try {
   const seedPath = join(directory, 'seed.sql');
   writeFileSync(seedPath, `${seed}\nINSERT INTO kitchen_remixes(id,source_id,target_id,source_revision,target_revision,axis) VALUES('keep-link','D01','D03',1,1,'flavor');\nINSERT INTO kitchen_favourites(recipeId,recipeRevision,portions,snapshot) SELECT id,revision,3,document FROM kitchen_recipes WHERE id='D01';\nINSERT INTO kitchen_notes(recipeId,document) VALUES('D01','{"text":"keep note","verdict":"repeat"}');`);
   wrangler(['execute', 'DB', '--file', seedPath]);
-  const sql = `SELECT id,source_id,target_id,source_revision,target_revision,axis,revision,created_at,updated_at FROM kitchen_remixes ORDER BY id`;
+  const sql = 'SELECT id,source_id,target_id,source_revision,target_revision,axis,revision,created_at,updated_at FROM kitchen_remixes ORDER BY id';
   const before = query(sql);
   const favourites = query('SELECT * FROM kitchen_favourites ORDER BY recipeId');
   const history = query('SELECT * FROM kitchen_recipe_history ORDER BY recipeId,revision');
