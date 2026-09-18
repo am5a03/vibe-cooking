@@ -1,14 +1,31 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "vibe-cooking",
-  "main": ".open-next/worker.js",
-  "compatibility_date": "2026-09-17",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
-  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "vibe-cooking" }],
-  "d1_databases": [{
-    "binding": "DB", "database_name": "vibe-cooking-db",
-    "database_id": "00000000-0000-0000-0000-000000000000",
-    "migrations_dir": "drizzle/migrations"
-  }]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vibe-cooking",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-09-17",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "vibe-cooking"
+		}
+	],
+	"vars": {
+  	"KITCHEN_ORIGIN": "https://vibe-cooking.am5a03.workers.dev"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "vibe-cooking-db",
+			"database_id": "de7ec490-f7f2-4481-9b2b-e0281f480540",
+			"migrations_dir": "drizzle/migrations"
+		}
+	]
 }

@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: ['claude/setup-nextjs-cloudflare-019m71wRrdmgY5rwo41cCUfa']
+    branches: ['main']
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,10 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install dependencies
+      - name: Install locked dependencies
         id: install
-        run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        run: npm ci
       - name: Preserve resolved dependency lock for review
         if: always()
         uses: actions/upload-artifact@v4
