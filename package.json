@@ -16,7 +16,7 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "test": "node --import tsx --experimental-sqlite --test tests/*.test.mjs",
-    "test:browser": "playwright test",
+    "test:browser": "node scripts/browser-check.mjs",
     "db:migration:new": "wrangler d1 migrations create DB",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "node scripts/check-deploy.mjs && wrangler d1 migrations apply DB --remote",

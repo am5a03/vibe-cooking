@@ -1,26 +1,38 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import process from 'node:process';
+import type { IngredientEntry, RecipeDocument } from '../../lib/kitchen/client';
 
 test('private cookbook: save, note, duplicate, edit and reload through real local D1', async ({ page, request }) => {
   const key = process.env.KITCHEN_TEST_TOKEN;
   if (!key) throw new Error('Run only with a temporary KITCHEN_TEST_TOKEN and isolated local D1.');
   expect((await request.get('/api/recipes')).status()).toBe(401);
-  const fixture = await import('../../examples/catalogue.json');
-  for (const entry of fixture.ingredients) {
+  const fixture = JSON.parse(readFileSync(new URL('../../examples/catalogue.json', import.meta.url), 'utf8')) as { ingredients: IngredientEntry[]; recipes: { id: string; recipe: RecipeDocument }[] };
+  // The API requires component definitions first, just like the production importer.
+  const pending = [...fixture.ingredients];
+  const imported = new Set<string>();
+  while (pending.length) {
+    const index = pending.findIndex((entry) => entry.ingredient.components.every((id) => imported.has(id)));
+    expect(index).toBeGreaterThanOrEqual(0);
+    const [entry] = pending.splice(index, 1);
+    if (!entry) throw new Error('Fixture ingredient ordering failed.');
     const response = await request.post('/api/ingredients', { headers: { Authorization: `Bearer ${key}` }, data: entry });
-    expect([201, 409]).toContain(response.status());
+    expect(response.status(), await response.text()).toBe(201);
+    imported.add(entry.id);
   }
   for (const entry of fixture.recipes) {
     const response = await request.post('/api/recipes', { headers: { Authorization: `Bearer ${key}` }, data: entry });
-    expect([201, 409]).toContain(response.status());
+    expect(response.status(), await response.text()).toBe(201);
   }
+  const original = fixture.recipes[0];
+  if (!original) throw new Error('Missing fixture recipe.');
   await page.goto('/');
   await page.getByLabel('Private kitchen key').fill(key);
   await page.getByRole('button', { name: 'Unlock my kitchen' }).click();
   await expect(page.getByRole('heading', { name: 'What sounds good?' })).toBeVisible();
   await expect(page.locator('.recipe-card')).toHaveCount(2);
   await page.screenshot({ path: 'test-results/kitchen-desktop.png', fullPage: true });
-  await page.getByRole('button', { name: fixture.recipes[0].recipe.title, exact: true }).click();
+  await page.getByRole('button', { name: original.recipe.title, exact: true }).click();
   await page.getByRole('button', { name: 'Save this version', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Saved this exact version' })).toBeVisible();
   await page.getByLabel('Your cooking note').fill('More ginger next time.');
@@ -34,7 +46,7 @@ test('private cookbook: save, note, duplicate, edit and reload through real loca
   await expect(page.getByRole('heading', { name: 'My ginger bowl' })).toBeVisible();
   await page.getByRole('button', { name: 'My kitchen', exact: true }).click();
   await page.getByRole('button', { name: 'Open saved version', exact: true }).click();
-  await expect(page.getByRole('heading', { name: fixture.recipes[0].recipe.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: original.recipe.title, exact: true })).toBeVisible();
   await expect(page.getByLabel('Your cooking note')).toHaveValue('More ginger next time.');
   await page.getByRole('button', { name: 'Open the current recipe', exact: true }).click();
   await page.getByRole('button', { name: 'Make a copy', exact: true }).click();
@@ -46,7 +58,6 @@ test('private cookbook: save, note, duplicate, edit and reload through real loca
   await page.getByRole('button', { name: 'Save preferences' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Preferences saved' })).toBeVisible();
   await page.reload(); await expect(page.getByLabel('Breakfast portions', { exact: true })).toHaveValue('2');
-  // A narrow viewport must not force horizontal scrolling.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'Recipes', exact: true }).click();
   await expect(page.locator('.recipe-card')).toHaveCount(3);

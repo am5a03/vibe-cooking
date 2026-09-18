@@ -48,7 +48,11 @@ async function readSession(request: Request, env: KitchenEnv): Promise<Session |
   if (!entry || entry.length > 4096) return null;
   let session: Partial<Session>;
   try {
-    session = await unsealData<Partial<Session>>(decodeURIComponent(entry.slice(name.length + 1)), { password, ttl: TTL });
+    const sealed = decodeURIComponent(entry.slice(name.length + 1));
+    // iron-session 8 emits a single ~2 format suffix. Reject noncanonical suffixes
+    // before its permissive parseInt-based version parser; the library checks the seal.
+    if (!/^[^~]+~2$/.test(sealed)) return null;
+    session = await unsealData<Partial<Session>>(sealed, { password, ttl: TTL });
   } catch { return null; }
   if (typeof session.id !== 'string' || !/^[a-f0-9]{64}$/.test(session.id) || session.origin !== new URL(request.url).origin || typeof session.expiresAt !== 'number' || session.expiresAt <= Math.floor(Date.now() / 1000)) return null;
   const row = await env.DB.prepare('SELECT expiresAt FROM kitchen_browser_sessions WHERE tokenHash = ?').bind(await digest(session.id)).first<{ expiresAt: number }>();
@@ -56,7 +60,6 @@ async function readSession(request: Request, env: KitchenEnv): Promise<Session |
 }
 async function throttle(request: Request, env: KitchenEnv): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
-  // CF-Connecting-IP is supplied by Cloudflare in production. No raw IPs are stored.
   const key = await digest(`login:${request.headers.get('CF-Connecting-IP') ?? 'local'}`);
   await env.DB.prepare('DELETE FROM kitchen_login_limits WHERE resetsAt <= ?').bind(now).run();
   const row = await env.DB.prepare(`INSERT INTO kitchen_login_limits(key, attempts, resetsAt) VALUES (?, 1, ?)
@@ -64,7 +67,7 @@ async function throttle(request: Request, env: KitchenEnv): Promise<void> {
   if (!row || row.attempts > 10) throw new ApiError(429, 'TOO_MANY_ATTEMPTS', 'Too many unlock attempts. Wait 15 minutes before trying again.');
 }
 
-/** Cookie access is an adapter over the existing bearer API. Never sends the key to the browser. */
+/** Cookie access is an adapter over the bearer API. Never returns the key to the browser. */
 export async function handleBrowser(request: Request, env: KitchenEnv): Promise<Response> {
   const requestId = crypto.randomUUID();
   try {
@@ -101,7 +104,6 @@ export async function handleBrowser(request: Request, env: KitchenEnv): Promise<
       }
       throw new ApiError(405, 'METHOD_NOT_ALLOWED', 'Use GET, POST or DELETE.');
     }
-    // A supplied bearer header is always checked as-is. Never fall back from a bad key to a cookie.
     if (request.headers.has('Authorization') || request.method === 'OPTIONS') return handle(request, env);
     sameOrigin(request, !['GET', 'HEAD'].includes(request.method));
     const session = await readSession(request, env);
@@ -116,6 +118,6 @@ export async function handleBrowser(request: Request, env: KitchenEnv): Promise<
       return finalize(response, requestId, null);
     }
     console.error(JSON.stringify({ event: 'kitchen_session_failed', requestId }));
-    return finalize(json({ error: { code: 'SESSION_STORAGE_NOT_READY', message: 'Browser access needs migration 0002. Run npm run db:migrate:local for your local database, then retry.', requestId } }, 503), requestId, null);
+    return finalize(json({ error: { code: 'SESSION_STORAGE_NOT_READY', message: 'Browser access needs migration 0002. Apply the migrations to the database this instance uses, then retry.', requestId } }, 503), requestId, null);
   }
 }
