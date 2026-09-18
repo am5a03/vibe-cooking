@@ -2,6 +2,13 @@
 
 A single-user recipe studio on Next.js, Cloudflare Workers/OpenNext, D1 and Drizzle. Browse your real catalogue, save exact recipe versions, keep cooking notes, and create/edit recipes in the browser. No accounts, AI service or R2 bucket required.
 
+## Working with coding agents
+
+Start with [AGENTS.md](AGENTS.md) for project essentials and task-specific guidance.
+Detailed workflow, testing, and database instructions live in `docs/agents/` and
+link to the existing product contracts. `CLAUDE.md` is a symlink to `AGENTS.md`,
+keeping the instructions shared rather than duplicated.
+
 ## UI architecture
 
 The interface uses source-owned shadcn/ui New York/Radix components with Tailwind 4
