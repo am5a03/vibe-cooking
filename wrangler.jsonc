@@ -1,32 +1,14 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "vibe-cooking",
-  "compatibility_date": "2024-12-01",
-  "pages_build_output_dir": ".vercel/output/static",
-
-  // D1 Database binding
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "vibe-cooking-db",
-      "database_id": "your-database-id-here"
-    }
-  ],
-
-  // R2 Storage binding
-  "r2_buckets": [
-    {
-      "binding": "R2",
-      "bucket_name": "vibe-cooking-storage"
-    }
-  ],
-
-  // AI binding for edge inference
-  "ai": {
-    "binding": "AI"
-  },
-
-  // Environment variables
-  "vars": {
-    "ENVIRONMENT": "development"
-  }
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-17",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "vibe-cooking" }],
+  "d1_databases": [{
+    "binding": "DB", "database_name": "vibe-cooking-db",
+    "database_id": "00000000-0000-0000-0000-000000000000",
+    "migrations_dir": "drizzle/migrations"
+  }]
 }

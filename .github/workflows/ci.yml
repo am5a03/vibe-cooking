@@ -1,59 +1,70 @@
 name: CI
-
 on:
   pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
-
+    branches: ['claude/setup-nextjs-cloudflare-019m71wRrdmgY5rwo41cCUfa']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kitchen-ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      WRANGLER_SEND_METRICS: 'false'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
+          node-version: '22'
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Biome linter
-        run: pnpm run lint
-
-      - name: Run Biome formatter check
-        run: pnpm exec biome check --error-on-warnings .
-
-  type-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        id: install
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Preserve resolved dependency lock for review
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          name: dependency-lock
+          path: package-lock.json
+          if-no-files-found: ignore
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run typecheck
+      - name: Test API, sessions and migrations
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm test
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
+      - name: Validate starter catalogue without writing data
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run catalogue:import
+      - name: Audit dependencies
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm audit --audit-level=high
+      - name: Build for Workers (no deployment)
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run build:worker
+      - name: Validate Worker bundle without deploying
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx wrangler deploy --dry-run
+      - name: Install test browser
+        id: browser
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npx playwright install --with-deps chromium
+      - name: Browser workflow on isolated local Workers and D1
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: node scripts/browser-check.mjs
+      - name: Preserve browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run TypeScript type check
-        run: pnpm exec tsc --noEmit
+          name: kitchen-browser-results
+          path: test-results/
+          if-no-files-found: ignore
