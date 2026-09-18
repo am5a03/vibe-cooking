@@ -1,10 +1,40 @@
-import { expect, test, type APIRequestContext, type Page, type Route } from "@playwright/test";
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type BrowserContext,
+  type Page,
+  type Route,
+} from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import type { RecipeDocument } from "../../lib/kitchen/client";
 
 const key = process.env.KITCHEN_TEST_TOKEN;
 if (!key) throw new Error("Run via npm run test:browser against disposable local D1.");
 const headers = { Authorization: `Bearer ${key}` };
+
+// These are screen tests, not repeated login tests. Obtain one real, server-issued
+// session and copy only its cookies into otherwise isolated browser contexts.
+// The auth/expiry tests remain independent; production throttling is unchanged.
+let cookies: Awaited<ReturnType<BrowserContext["cookies"]>> = [];
+test.beforeAll(async ({ browser, baseURL }) => {
+  if (!baseURL) throw new Error("The isolated browser runner must provide baseURL.");
+  const session = await browser.newContext({ baseURL });
+  try {
+    const response = await session.request.post("/api/session", {
+      headers: { Origin: new URL(baseURL).origin, "X-Kitchen-Request": "1" },
+      data: { key },
+    });
+    expect(response.status(), await response.text()).toBe(200);
+    cookies = await session.cookies();
+    expect(cookies.some((cookie) => cookie.httpOnly)).toBe(true);
+  } finally {
+    await session.close();
+  }
+});
+test.beforeEach(async ({ context }) => {
+  await context.addCookies(cookies);
+});
 
 async function fixture(request: APIRequestContext) {
   const prefix = `ui3-${randomUUID().slice(0, 8)}`;
@@ -67,11 +97,19 @@ async function fixture(request: APIRequestContext) {
   }
   return { prefix, ids, id, recipe, alternative };
 }
-async function unlock(page: Page, route = "all") {
+async function openKitchen(page: Page, route = "all") {
   await page.goto(`/#${route}`);
-  await page.getByLabel("Private kitchen key").fill(key as string);
-  await page.getByRole("button", { name: "Unlock my kitchen" }).click();
   await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+}
+async function openIngredientCreator(page: Page) {
+  const trigger = page.getByRole("button", {
+    name: "Add an ingredient to your catalogue",
+    exact: true,
+  });
+  await expect(trigger).toHaveAttribute("aria-expanded", /true|false/);
+  if ((await trigger.getAttribute("aria-expanded")) !== "true") await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByLabel("New ingredient name", { exact: true })).toBeVisible();
 }
 async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -85,7 +123,7 @@ test("recipe screens use shadcn controls at mobile, tablet and desktop widths", 
 }, info) => {
   test.setTimeout(180000);
   const data = await fixture(request);
-  await unlock(page);
+  await openKitchen(page);
   for (const width of [320, 390, 768, 1360]) {
     await page.setViewportSize({ width, height: 960 });
     await page.goto("/#all");
@@ -128,7 +166,7 @@ test("recipe screens use shadcn controls at mobile, tablet and desktop widths", 
 
     await page.goto(`/#edit/${data.id}`);
     await expect(page.getByLabel("Recipe title", { exact: true })).toHaveValue(data.recipe.title);
-    await page.getByRole("button", { name: "Add an ingredient to your catalogue" }).click();
+    await openIngredientCreator(page);
     const multi = page.getByLabel("Contains these catalogue ingredients (optional)", {
       exact: true,
     });
@@ -159,7 +197,7 @@ test("editor retains row identity, multiple ingredient selection, portion review
   request,
 }) => {
   const data = await fixture(request);
-  await unlock(page, `edit/${data.id}`);
+  await openKitchen(page, `edit/${data.id}`);
   const title = page.getByLabel("Recipe title", { exact: true });
   await expect(title).toHaveValue(data.recipe.title);
   await title.fill("");
@@ -179,7 +217,7 @@ test("editor retains row identity, multiple ingredient selection, portion review
   await expect(page.getByLabel("Ingredient 4", { exact: true })).toHaveValue(data.ids[2]);
   await page.getByLabel("Remove ingredient 4", { exact: true }).click();
 
-  await page.getByRole("button", { name: "Add an ingredient to your catalogue" }).click();
+  await openIngredientCreator(page);
   await page.getByLabel("New ingredient name", { exact: true }).fill(`${data.prefix} compound`);
   await page
     .getByLabel("Contains these catalogue ingredients (optional)", { exact: true })
@@ -243,7 +281,7 @@ test("preference checkboxes preserve mutual exclusion, busy disabling and failed
   request,
 }) => {
   const data = await fixture(request);
-  await unlock(page, "preferences");
+  await openKitchen(page, "preferences");
   const love = page.getByLabel(`Love ${data.prefix} ingredient 1`, { exact: true });
   const exclude = page.getByLabel(`Exclude ${data.prefix} ingredient 1`, { exact: true });
   await love.check();
@@ -295,7 +333,7 @@ test("catalogue search, pagination, empty state and retry work with shared recip
     });
     expect(response.status(), await response.text()).toBe(201);
   }
-  await unlock(page);
+  await openKitchen(page);
   const search = page.getByLabel("Search recipe titles");
   await search.fill(`Paging ${data.prefix}`);
   await page.getByRole("button", { name: "Search", exact: true }).click();
