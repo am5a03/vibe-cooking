@@ -17,7 +17,9 @@ export function useDirty(dirty: boolean) {
 export function Field({ label: title, children, wide = false }: { label: string; children: ReactElement<{ id?: string }>; wide?: boolean }) {
   const generatedId = useId();
   const id = children.props.id ?? generatedId;
-  return <label htmlFor={id} className={`field${wide ? ' wide' : ''}`}><span>{title}</span>{cloneElement(children, { id })}</label>;
+  // The label is a sibling, not a wrapper: select option text must not become part
+  // of the label's text when assistive tools locate the control by its label.
+  return <div className={`field${wide ? ' wide' : ''}`}><label htmlFor={id} style={{ fontSize: 12, fontWeight: 600 }}>{title}</label>{cloneElement(children, { id })}</div>;
 }
 export function ErrorBox({ message }: { message: string }) {
   return message ? <div className="notice error" role="alert">{message}</div> : null;

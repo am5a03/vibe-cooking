@@ -1,5 +1,8 @@
 NEXTJS_ENV=development
 # Generate with npm run token:create; never commit .dev.vars.
 API_TOKEN=REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS
-# Same-origin requests work by default. Set one exact origin only for a separate client.
+# Non-secret: exact address used in your browser, no trailing slash.
+# Use http://localhost:8787 for a preview opened at that address.
+KITCHEN_ORIGIN=http://localhost:3000
+# Only for a separate bearer-token client, not for cookie sessions:
 # ALLOWED_ORIGIN=http://localhost:5173

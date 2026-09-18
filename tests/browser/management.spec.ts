@@ -12,10 +12,7 @@ test('create an ingredient and recipe, resolve stale edits, and retain a draft t
   await page.getByRole('button', { name: 'Add a recipe', exact: true }).click();
   await page.getByLabel('Recipe title', { exact: true }).fill('A browser-created recipe');
   const details = page.locator('.ingredient-creator');
-  if (!(await details.getAttribute('open'))) {
-    // getAttribute returns an empty string for an open details element, so use the DOM property.
-    if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) await details.locator('summary').click();
-  }
+  if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) await details.locator('summary').click();
   await page.getByLabel('New ingredient name', { exact: true }).fill('Test quinoa');
   await page.getByRole('button', { name: 'Create ingredient', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Added Test quinoa' })).toBeVisible();
@@ -37,7 +34,7 @@ test('create an ingredient and recipe, resolve stale edits, and retain a draft t
   const changed = await request.put(`/api/recipes/${id}`, { headers: { Authorization: `Bearer ${key}`, 'If-Match': tag }, data: { ...envelope.data.recipe, title: 'Changed elsewhere' } });
   expect(changed.status()).toBe(200);
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('changed in another tab');
+  await expect(page.getByRole('alert').filter({ hasText: 'changed in another tab' })).toBeVisible();
   await expect(page.getByLabel('Recipe title', { exact: true })).toHaveValue('My unsaved change');
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Reload latest recipe', exact: true }).click();
