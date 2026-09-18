@@ -1,10 +1,6 @@
-/* Declare the order before Tailwind establishes its default layers. */
-@layer theme, base, legacy, components, utilities;
+@layer theme, base, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
-/* Keep the original discovery -> kitchen cascade order during migration. */
-@import "./kitchen-discovery.css" layer(legacy);
-@import "./kitchen.css" layer(legacy);
 
 /* The kitchen remains light-only; do not activate dark utilities from the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -32,16 +28,6 @@
   --input: #d5dacb;
   --ring: #b07a48;
   --radius: 0.5rem;
-
-  /* Temporary legacy aliases. Never redefine the semantic tokens in a screen. */
-  --paper: var(--background);
-  --surface: var(--card);
-  --ink: var(--foreground);
-  --green: var(--primary);
-  --line: var(--border);
-  --soft: var(--secondary);
-  --kitchen-muted: var(--muted-foreground);
-  --kitchen-accent: #ad6b42;
 }
 
 @theme inline {
@@ -73,16 +59,32 @@
 }
 
 @layer base {
-  * { @apply border-border; }
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 15px;
     line-height: 1.65;
   }
-  /* Include future portals outside .kitchen-app in the motion preference. */
+  /* Hidden retained drafts and collapsed content must beat display utilities. */
+  [hidden]:not([hidden="until-found"]) {
+    display: none !important;
+  }
+
+  /* Native disclosure triggers and programmatically focused headings get a fallback.
+     Component focus utilities can override it without specificity workarounds. */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  /* Cover product content, pseudo-elements and body-mounted Radix portals alike. */
   @media (prefers-reduced-motion: reduce) {
-    [data-slot], [data-slot] * {
+    *,
+    ::before,
+    ::after {
       scroll-behavior: auto !important;
       animation: none !important;
       transition: none !important;

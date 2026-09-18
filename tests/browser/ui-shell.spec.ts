@@ -23,12 +23,23 @@ test("shadcn unlock: responsive card, labelled native input and visible keyboard
   const submit = page.getByRole("button", { name: "Unlock my kitchen" });
   await expect(submit).toHaveAttribute("type", "submit");
   await expect(submit).toHaveAttribute("data-slot", "button");
-  for (const width of [1360, 768, 390, 320]) {
+  for (const width of [1360, 1001, 1000, 768, 681, 680, 390, 320]) {
     await page.setViewportSize({ width, height: 960 });
     await expect(submit).toHaveCSS("height", "44px");
     await expect(input).toHaveCSS("height", "44px");
     await expect(input).toHaveCSS("font-size", width < 768 ? "16px" : "15px");
     await expect(card).toHaveCSS("background-color", "rgb(255, 254, 249)");
+    // These are the original shell breakpoints, not Tailwind's sm/lg defaults.
+    const layout = page.locator("[data-kitchen-unlock-layout]");
+    const story = page.locator("[data-kitchen-unlock-story]");
+    await expect(layout).toHaveCSS("display", width <= 680 ? "block" : "grid");
+    await expect(layout).toHaveCSS("margin-top", width <= 680 ? "35px" : "70px");
+    await expect(layout).toHaveCSS("padding-left", width <= 680 ? "18px" : "30px");
+    await expect(layout).toHaveCSS("max-width", width <= 680 ? "480px" : "1080px");
+    await expect(story.locator("p")).toHaveCSS("display", width <= 680 ? "none" : "block");
+    await expect(story.locator("h1")).toHaveCSS("font-family", /Georgia/);
+    await expect(story.locator("em")).toHaveCSS("color", "rgb(111, 128, 91)");
+    if (width > 680) await expect(layout).toHaveCSS("column-gap", width <= 1000 ? "45px" : "90px");
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
@@ -118,7 +129,7 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   await page.getByRole("button", { name: "Unlock my kitchen" }).click();
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   await expect(nav).toBeVisible();
-  for (const width of [1360, 768, 390, 320]) {
+  for (const width of [1360, 1001, 1000, 768, 681, 680, 390, 320]) {
     await page.setViewportSize({ width, height: 960 });
     await nav.getByRole("button", { name: "Preferences", exact: true }).click();
     await expect(nav.getByRole("button", { name: "Preferences", exact: true })).toHaveAttribute(
@@ -133,6 +144,22 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
     await expect(portions).toBeVisible();
     await expect(portions).toHaveAttribute("data-slot", "input");
     await expect(portions).toHaveCSS("height", width < 768 ? "44px" : "40px");
+    const workspace = page.locator("main[data-kitchen-workspace]");
+    const footer = page.locator("[data-kitchen-footer]");
+    await expect(workspace).toHaveCSS(
+      "padding-left",
+      width <= 680 ? "18px" : width <= 1000 ? "25px" : "40px",
+    );
+    await expect(workspace).toHaveCSS(
+      "padding-top",
+      width <= 680 ? "32px" : width <= 1000 ? "35px" : "45px",
+    );
+    await expect(workspace).toHaveCSS(
+      "padding-bottom",
+      width <= 680 ? "45px" : width <= 1000 ? "55px" : "70px",
+    );
+    await expect(footer).toHaveCSS("flex-direction", width <= 680 ? "column" : "row");
+    await expect(footer).toHaveCSS("color", "rgb(104, 115, 98)");
     const linkedLabel = page.locator("label").filter({ hasText: /^Breakfast portions$/ });
     await expect(linkedLabel).toHaveAttribute("data-slot", "field-label");
     for (const button of await nav.getByRole("button").all()) await expect(button).toBeVisible();
@@ -146,11 +173,17 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   const title = page.getByLabel("Recipe title", { exact: true });
   await title.fill("Phase 2 unsaved draft");
   await nav.getByRole("button", { name: "Discover", exact: true }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Keep editing", exact: true }).click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Keep editing", exact: true })
+    .click();
   await expect(page).toHaveURL(/#new$/);
   await expect(title).toHaveValue("Phase 2 unsaved draft");
   await page.getByRole("button", { name: "Lock", exact: true }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Keep editing", exact: true }).click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Keep editing", exact: true })
+    .click();
   await expect(title).toHaveValue("Phase 2 unsaved draft");
   await page.evaluate(() => window.dispatchEvent(new Event("kitchen:expired")));
   await expect(page.getByRole("heading", { name: "Welcome back." })).toBeVisible();
@@ -160,7 +193,10 @@ test("shell keeps navigation, native field labels and dirty-route protection thr
   await page.getByRole("button", { name: "Unlock my kitchen" }).click();
   await expect(title).toHaveValue("Phase 2 unsaved draft");
   await page.getByRole("button", { name: "Lock", exact: true }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Lock and discard", exact: true }).click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Lock and discard", exact: true })
+    .click();
   await expect(page.getByRole("heading", { name: "Come on in." })).toBeVisible();
   await expect(nav).toBeHidden();
 });

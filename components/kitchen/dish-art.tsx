@@ -2,9 +2,7 @@ import { label, type RecipeDocument } from "@/lib/kitchen/client";
 import { cn } from "@/lib/utils";
 import { Bean, EggFried, Fish, Leaf, Soup, Wheat } from "lucide-react";
 
-/** Product illustration: self-contained utilities, independent of legacy selectors.
- * It must render identically inside a Card, which excludes legacy CSS descendants.
- */
+/** Product illustration with self-contained, responsive utilities. */
 export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; large?: boolean }) {
   const Icon =
     recipe.main === "salmon"
@@ -19,8 +17,9 @@ export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; lar
   return (
     <div
       aria-hidden="true"
+      data-kitchen-dish-art
       className={cn(
-        "dish-art relative flex h-[210px] shrink-0 items-center justify-center overflow-hidden bg-[#e4ead8] sm:h-[205px]",
+        "relative flex h-[210px] shrink-0 items-center justify-center overflow-hidden bg-[#e4ead8] sm:h-[205px]",
         "before:absolute before:-right-[78px] before:-top-[83px] before:size-[180px] before:rounded-full before:border before:border-white/50",
         "after:absolute after:-left-[120px] after:top-[140px] after:size-[180px] after:rounded-full after:border after:border-white/50",
         recipe.mode === "breakfast" && "bg-[#f0e4d0]",

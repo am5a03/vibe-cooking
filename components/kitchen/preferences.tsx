@@ -155,7 +155,7 @@ export function PreferencesPanel() {
                 <div className="max-h-[500px] overflow-y-auto pr-2">
                   {entries.map((entry) => (
                     <div
-                      className="taste-row flex flex-wrap items-center gap-4 border-b py-3 text-sm [&>span]:min-w-0 [&>span]:flex-1 [&>span]:basis-32 [&>label]:text-xs"
+                      data-kitchen-taste-row className="flex flex-wrap items-center gap-4 border-b py-3 text-sm [&>span]:min-w-0 [&>span]:flex-1 [&>span]:basis-32 [&>label]:text-xs"
                       key={entry.id}
                     >
                       <span>{entry.ingredient.name}</span>

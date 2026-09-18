@@ -91,7 +91,7 @@ export function RecipeBrowser({ saved }: { saved: boolean }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Find a recipe…"
-              maxLength={160}
+              maxLength={120}
               className="h-11 min-w-0 bg-card md:h-10"
             />
             <Button

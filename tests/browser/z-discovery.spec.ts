@@ -47,11 +47,11 @@ test('discovery respects saved exclusions, substantive ingredients and explicit 
   await page.getByLabel('Include an ingredient').selectOption('broccoli');
   await page.getByLabel('Maximum minutes', { exact:true }).fill('50');
   await page.getByRole('button', { name:'Find meal ideas',exact:true }).click();
-  await expect(page.locator('.recipe-card')).toHaveCount(3);
+  await expect(page.locator('[data-kitchen-recipe-card]')).toHaveCount(3);
   await expect(page.getByText('4 matching recipes',{exact:true})).toBeVisible();
   await page.screenshot({path:'test-results/discovery-desktop.png',fullPage:true});
   await page.getByRole('button',{name:'Preferences',exact:true}).click();
-  const soyRow=page.locator('.taste-row').filter({has:page.locator('span').filter({hasText:/^Soy$/})});
+  const soyRow=page.locator('[data-kitchen-taste-row]').filter({has:page.locator('span').filter({hasText:/^Soy$/})});
   await soyRow.getByLabel('Exclude').check();
   await page.getByRole('button',{name:'Save preferences'}).click();
   await expect(page.getByRole('status').filter({hasText:'Preferences saved'})).toBeVisible();
@@ -59,15 +59,15 @@ test('discovery respects saved exclusions, substantive ingredients and explicit 
   await expect(page.getByRole('button',{name:'Find meal ideas',exact:true})).toBeEnabled();
   await page.getByLabel('Include an ingredient').selectOption('broccoli');
   await page.getByRole('button',{name:'Find meal ideas',exact:true}).click();
-  await expect(page.locator('.recipe-card')).toHaveCount(1);
-  await expect(page.locator('.recipe-card')).toContainText('chickpea');
+  await expect(page.locator('[data-kitchen-recipe-card]')).toHaveCount(1);
+  await expect(page.locator('[data-kitchen-recipe-card]')).toContainText('chickpea');
   await page.getByLabel('Discovery portions').fill('2');
   await page.getByRole('button',{name:'Find meal ideas',exact:true}).click();
   await expect(page.getByText('No recipes match all your choices.')).toBeVisible();
   await page.getByRole('button',{name:'All recipes',exact:true}).click();
   await page.getByLabel('Search recipe titles').fill('Lemon–tahini tofu');
   await page.getByRole('button',{name:'Search',exact:true}).click();
-  await expect(page.locator('.recipe-card').first()).toContainText('tofu');
+  await expect(page.locator('[data-kitchen-recipe-card]').first()).toContainText('tofu');
 });
 test('review, preview, use, invalidate and reconfirm a connected flavour remix', async ({ page, request }) => {
   await page.goto('/#recipe/EXP-D01');
@@ -82,7 +82,7 @@ test('review, preview, use, invalidate and reconfirm a connected flavour remix',
   await page.getByRole('button',{name:'Back to recipe',exact:true}).click();
   await page.getByRole('button',{name:'Explore variations',exact:true}).click();
   await page.getByRole('button').filter({hasText:'Smoky–lime tofu & broccoli roast'}).click();
-  await expect(page.locator('.diff-removed')).toContainText(['Tahini']);
+  await expect(page.locator('[data-change="removed"]')).toContainText(['Tahini']);
   await page.screenshot({path:'test-results/remix-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);

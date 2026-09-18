@@ -144,7 +144,7 @@ test("recipe screens use shadcn controls at mobile, tablet and desktop widths", 
     await page.goto("/#all");
     await page.getByLabel("Search recipe titles").fill(data.prefix);
     await page.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(page.locator('.recipe-card[data-slot="card"]')).toHaveCount(2);
+    await expect(page.locator('[data-kitchen-recipe-card][data-slot="card"]')).toHaveCount(2);
     await noOverflow(page);
     await page.screenshot({ path: info.outputPath(`catalogue-${width}.png`), fullPage: true });
     await page.getByRole("button", { name: data.recipe.title, exact: true }).click();
@@ -157,7 +157,10 @@ test("recipe screens use shadcn controls at mobile, tablet and desktop widths", 
     await portions.selectOption("3");
     await expect(check).not.toBeChecked();
     await expect(page.getByText("~27 min total", { exact: true })).toBeVisible();
-    await expect(page.locator(".dish-art")).toHaveCSS("height", width < 640 ? "235px" : "280px");
+    await expect(page.locator("[data-kitchen-dish-art]")).toHaveCSS(
+      "height",
+      width < 640 ? "235px" : "280px",
+    );
     await noOverflow(page);
     await page.screenshot({ path: info.outputPath(`detail-${width}.png`), fullPage: true });
 
@@ -201,7 +204,7 @@ test("recipe screens use shadcn controls at mobile, tablet and desktop widths", 
     await page.getByLabel("Discovery portions").fill("3");
     await page.getByLabel("Maximum minutes", { exact: true }).fill("");
     await page.getByRole("button", { name: "Find meal ideas" }).click();
-    await expect(page.locator('.recipe-card[data-slot="card"]')).toHaveCount(2);
+    await expect(page.locator('[data-kitchen-recipe-card][data-slot="card"]')).toHaveCount(2);
     await noOverflow(page);
     await page.screenshot({ path: info.outputPath(`discovery-${width}.png`), fullPage: true });
   }
@@ -354,13 +357,13 @@ test("catalogue search, pagination, empty state and retry work with shared recip
   const search = page.getByLabel("Search recipe titles");
   await search.fill(`Paging ${data.prefix}`);
   await page.getByRole("button", { name: "Search", exact: true }).click();
-  await expect(page.locator(".recipe-card")).toHaveCount(24);
+  await expect(page.locator("[data-kitchen-recipe-card]")).toHaveCount(24);
   await page.getByRole("button", { name: "Load more recipes" }).click();
-  await expect(page.locator(".recipe-card")).toHaveCount(26);
+  await expect(page.locator("[data-kitchen-recipe-card]")).toHaveCount(26);
   await search.fill(`no-match-${data.prefix}`);
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByRole("heading", { name: "A fresh page in your cookbook." })).toBeVisible();
-  await expect(page.locator(".recipe-card")).toHaveCount(0);
+  await expect(page.locator("[data-kitchen-recipe-card]")).toHaveCount(0);
   let fail = true;
   await page.route("**/api/recipes?*", async (route) => {
     if (fail) {
@@ -378,5 +381,52 @@ test("catalogue search, pagination, empty state and retry work with shared recip
     page.getByRole("alert").filter({ hasText: "Catalogue temporarily unavailable." }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Retry loading recipes" }).click();
-  await expect(page.locator(".recipe-card")).toHaveCount(24);
+  await expect(page.locator("[data-kitchen-recipe-card]")).toHaveCount(24);
+});
+
+test("long recipe content remains readable at narrow widths after CSS cleanup", async ({
+  page,
+  request,
+}, info) => {
+  const data = await fixture(request);
+  const latest = await request.get(`/api/recipes/${data.id}`, { headers });
+  expect(latest.ok()).toBe(true);
+  const title = "A recipe title that takes more than one line on a small screen "
+    .repeat(3)
+    .slice(0, 180)
+    .trim();
+  const description =
+    "A longer recipe description with room for personal notes and cooking details. ".repeat(10);
+  const updated = await request.put(`/api/recipes/${data.id}`, {
+    headers: { ...headers, "If-Match": latest.headers().etag },
+    data: { ...data.recipe, title, description },
+  });
+  expect(updated.ok(), await updated.text()).toBe(true);
+  await openKitchen(page);
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 960 });
+    await page.goto("/#all");
+    const search = page.getByLabel("Search recipe titles");
+    await expect(search).toHaveAttribute("maxlength", "120");
+    await search.fill(title);
+    await expect(search).toHaveValue(title.slice(0, 120));
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    const card = page.locator("[data-kitchen-recipe-card]").filter({ hasText: title });
+    await expect(card).toHaveCount(1);
+    await expect(card.getByRole("heading")).toHaveText(title);
+    await noOverflow(page);
+    await card.getByRole("button", { name: title, exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+    await noOverflow(page);
+    await page.screenshot({ path: info.outputPath(`long-detail-${width}.png`), fullPage: true });
+    await page.getByRole("button", { name: "Edit recipe", exact: true }).click();
+    const field = page.getByLabel("Description", { exact: true });
+    // Recipe validation intentionally trims surrounding whitespace before storage.
+    await expect(field).toHaveValue(description.trim());
+    await expect(field).toHaveCSS("resize", "vertical");
+    await expect(page.getByRole("button", { name: "Save changes", exact: true })).toBeVisible();
+    await noOverflow(page);
+    // Browser reload is safe here: this test has not altered the loaded editor.
+    await page.goto("/#all");
+  }
 });

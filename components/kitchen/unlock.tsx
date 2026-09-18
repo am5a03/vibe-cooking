@@ -24,7 +24,9 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
     if (error && !busy) input.current?.focus();
   }, [error, busy]);
 
-  useEffect(() => { if (expired) input.current?.focus(); }, [expired]);
+  useEffect(() => {
+    if (expired) input.current?.focus();
+  }, [expired]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,15 +48,29 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
   }
 
   return (
-    <main className="unlock-layout">
-      <div className="unlock-story">
-        <span className="eyebrow">A kitchen of your own</span>
-        <h1>
-          Good food.<br /><em>Your way.</em>
+    <main
+      data-kitchen-unlock-layout
+      className="mx-auto my-[35px] block max-w-[480px] px-[18px] min-[681px]:my-[70px] min-[681px]:grid min-[681px]:max-w-[1080px] min-[681px]:grid-cols-[1fr_1fr] min-[681px]:items-center min-[681px]:gap-[45px] min-[681px]:px-[30px] min-[1001px]:gap-[90px]"
+    >
+      <div data-kitchen-unlock-story className="mb-7 min-[681px]:mb-0">
+        <span className="text-[10px] font-bold uppercase tracking-[.17em] text-muted-foreground">
+          A kitchen of your own
+        </span>
+        <h1 className="mb-[25px] mt-5 font-serif text-[54px] font-normal leading-[1.02] tracking-[-.035em] min-[681px]:text-[clamp(58px,6vw,83px)]">
+          Good food.
+          <br className="hidden min-[681px]:inline" />
+          <em className="font-normal text-[#6f805b]">Your way.</em>
         </h1>
-        <p>Keep the recipes you love.<br />Make room for something new.</p>
-        <div className="story-mark" aria-hidden="true">
-          <Leaf size={118} strokeWidth={0.8} />
+        <p className="mb-5 hidden text-[17px] leading-[1.8] text-muted-foreground min-[681px]:block">
+          Keep the recipes you love.
+          <br />
+          Make room for something new.
+        </p>
+        <div
+          className="mt-[35px] hidden h-[180px] w-[195px] -rotate-[8deg] place-items-center rounded-[50%_50%_8%_50%] bg-[#e5ead7] text-[#6e8359] min-[681px]:grid"
+          aria-hidden="true"
+        >
+          <Leaf className="shrink-0" size={118} strokeWidth={0.8} />
         </div>
       </div>
       <section data-kitchen-unlock aria-labelledby={headingId} className="min-w-0">
@@ -100,7 +116,11 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
                 />
               </Field>
               <ErrorBox id={errorId} message={error} />
-              <Button type="submit" disabled={busy} className="h-11 w-full gap-2 text-[13px] font-semibold">
+              <Button
+                type="submit"
+                disabled={busy}
+                className="h-11 w-full gap-2 text-[13px] font-semibold"
+              >
                 {busy ? "Unlocking…" : "Unlock my kitchen"}
                 {busy ? (
                   <LoaderCircle className="size-[17px] animate-spin" aria-hidden="true" />
@@ -113,7 +133,8 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
               {busy ? "Unlocking your kitchen…" : ""}
             </output>
             <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-              No registration. The app does not save your key in browser storage. Your session lasts up to eight hours.
+              No registration. The app does not save your key in browser storage. Your session lasts
+              up to eight hours.
             </p>
             <details className="mt-6 border-t pt-[18px] text-xs text-muted-foreground">
               <summary className="cursor-pointer rounded-sm text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
@@ -121,10 +142,12 @@ export function Unlock({ expired, onUnlock }: { expired: boolean; onUnlock: () =
               </summary>
               <p className="mt-4 leading-relaxed">
                 Apply the new browser-session migration with{" "}
-                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">npm run db:migrate:local</code>.
-                {" "}Keep using your existing{" "}
-                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">API_TOKEN</code>; no second secret is required.
-                {" "}For a remote instance, apply reviewed remote migrations instead.
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                  npm run db:migrate:local
+                </code>
+                . Keep using your existing{" "}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">API_TOKEN</code>
+                {"; no second secret is required. For a remote instance, apply reviewed remote migrations instead."}
               </p>
             </details>
           </CardContent>
