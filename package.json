@@ -3,7 +3,9 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.16.0 <23" },
+  "engines": {
+    "node": ">=22.16.0 <23"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,18 +25,43 @@
     "db:export:remote": "wrangler d1 export DB --remote --output backups/kitchen.sql",
     "catalogue:import": "node --import tsx scripts/import-catalogue.ts",
     "token:create": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('hex'))\"",
-    "cf:typegen": "wrangler types --env-interface CloudflareEnv worker-configuration.d.ts"
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv worker-configuration.d.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:generate:custom": "drizzle-kit generate --custom"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "1.20.6", "next": "15.5.24", "react": "19.3.0", "react-dom": "19.3.0",
-    "drizzle-orm": "0.45.2", "iron-session": "8.0.4",
-    "react-hook-form": "^7.53.2", "@hookform/resolvers": "^3.9.1", "zod": "^3.23.8",
-    "clsx": "^2.1.1", "tailwind-merge": "^2.5.4", "class-variance-authority": "^0.7.0", "lucide-react": "^0.454.0"
+    "@opennextjs/cloudflare": "1.20.6",
+    "next": "15.5.24",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "drizzle-orm": "0.45.2",
+    "iron-session": "8.0.4",
+    "react-hook-form": "^7.53.2",
+    "@hookform/resolvers": "^3.9.1",
+    "zod": "^3.23.8",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4",
+    "class-variance-authority": "^0.7.0",
+    "lucide-react": "^0.454.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20260917.1", "@types/node": "^22.10.1", "@types/react": "^19.0.2", "@types/react-dom": "^19.0.2",
-    "typescript": "5.8.3", "tailwindcss": "^4.0.0", "@tailwindcss/postcss": "^4.0.0", "postcss": "8.5.28",
-    "wrangler": "4.134.0", "@biomejs/biome": "1.9.4", "tsx": "^4.20.5", "@playwright/test": "^1.56.1"
+    "@cloudflare/workers-types": "5.20260917.1",
+    "@types/node": "^22.10.1",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "5.8.3",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "8.5.28",
+    "wrangler": "4.134.0",
+    "@biomejs/biome": "1.9.4",
+    "tsx": "^4.20.5",
+    "@playwright/test": "^1.56.1",
+    "drizzle-kit": "0.31.10"
   },
-  "overrides": { "next": { "postcss": "8.5.28" } }
+  "overrides": {
+    "next": {
+      "postcss": "8.5.28"
+    }
+  }
 }
