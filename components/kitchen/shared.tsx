@@ -38,13 +38,13 @@ export function ErrorBox({ message, id }: { message: string; id?: string }) {
 }
 export function Loading({ label: message = 'Opening your kitchen…' }: { label?: string } = {}) {
   return (
-    <div role="status" aria-live="polite" aria-atomic="true" className="block px-6 py-16 text-center text-sm text-muted-foreground">
+    <div className="block px-6 py-16 text-center text-sm text-muted-foreground">
       <div aria-hidden="true" className="mx-auto mb-5 flex max-w-xs flex-col items-center gap-3">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-5/6" />
       </div>
-      <span>{message}</span>
+      <output aria-live="polite" aria-atomic="true">{message}</output>
     </div>
   );
 }

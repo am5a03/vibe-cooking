@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button } from "../components/ui/button.tsx";
-import { ErrorBox, Field, Loading } from "../components/kitchen/shared.tsx";
-import { KitchenHeader } from "../components/kitchen/kitchen-header.tsx";
-import { Unlock } from "../components/kitchen/unlock.tsx";
+import { tsImport } from "tsx/esm/api";
+
+// Next preserves JSX for its compiler. These standalone render tests instead use
+// the automatic JSX runtime, without changing the application's tsconfig.
+const { Button, ErrorBox, Field, Loading, KitchenHeader, Unlock } = await tsImport(
+  "./helpers/ui-components.ts",
+  {
+    parentURL: import.meta.url,
+    tsconfig: fileURLToPath(new URL("./tsconfig.ui.json", import.meta.url)),
+  },
+);
 
 const render = (component, props, ...children) =>
   renderToStaticMarkup(createElement(component, props, ...children));
@@ -52,8 +60,8 @@ test("shared feedback preserves a single alert and a text status with decorative
   assert.match(error, /data-slot="alert-description"/);
   assert.match(error, /Try again\./);
   const loading = render(Loading, { label: "Loading recipes…" });
-  assert.match(loading, /role="status"/);
-  assert.match(loading, /aria-live="polite"/);
+  assert.match(loading, /<output[^>]*aria-live="polite"/);
+  assert.match(loading, /aria-atomic="true"/);
   assert.match(loading, /aria-hidden="true"/);
   assert.equal([...loading.matchAll(/data-slot="skeleton"/g)].length, 3);
   assert.match(loading, /Loading recipes…/);
@@ -72,6 +80,7 @@ test("header exposes the current destination without introducing tab or menu sem
 
 test("unlock preserves native validation and exposes the expired-session message", () => {
   const html = render(Unlock, { expired: true, onUnlock() {} });
+  assert.match(html, /<section[^>]*aria-labelledby=/);
   assert.match(html, /data-slot="card"/);
   assert.match(html, /data-slot="field"/);
   assert.match(html, /data-slot="input"/);
