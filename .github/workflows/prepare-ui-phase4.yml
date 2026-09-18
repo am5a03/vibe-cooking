@@ -10,12 +10,9 @@ jobs:
   prepare:
     if: github.repository == 'am5a03/vibe-cooking' && github.ref == 'refs/heads/feat/shadcn-phase-4-confirmations'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     permissions:
       contents: write
-    env:
-      NEXT_TELEMETRY_DISABLED: '1'
-      WRANGLER_SEND_METRICS: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,26 +21,18 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
-      - name: Verify merged baseline without deploying
-        run: npm run typecheck && npm run lint && npm test && npm run build:worker && npx wrangler deploy --dry-run
-      - run: npx playwright install --with-deps chromium
-      - name: Baseline workflows on isolated local D1
-        run: npm run test:browser
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ui-phase4-before
-          path: test-results/
-      - name: Generate only the New York alert dialog
+      # Baseline already passed in run 35392679064, before its CLI prompt failure.
+      - name: Generate alert dialog and restore every existing component
         run: |
-          npx --yes shadcn@4.21.0 add alert-dialog --yes
+          npx --yes shadcn@4.21.0 add alert-dialog --yes --overwrite
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
           const path = 'components/ui/alert-dialog.tsx';
           writeFileSync(path, readFileSync(path, 'utf8').replaceAll('from "cn"', 'from "@/lib/utils"'));
           NODE
-          git restore package.json package-lock.json components.json app/globals.css
+          git restore package.json package-lock.json components.json app/globals.css components/ui/button.tsx
           npx biome format --write components/ui/alert-dialog.tsx
-          npm ci --ignore-scripts
+          npm ci
       - name: Commit primitive and remove preparation workflow
         run: |
           rm .github/workflows/prepare-ui-phase4.yml
