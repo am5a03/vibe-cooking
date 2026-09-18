@@ -1,19 +1,25 @@
-name: Deploy to Cloudflare Workers (manual)
+name: Deploy to Cloudflare Workers
+
 on:
+  push:
+    branches: ['main']
   workflow_dispatch:
     inputs:
       confirm:
         description: 'Type DEPLOY to publish this commit. Apply reviewed migrations separately first.'
         required: true
         type: string
+
 permissions:
   contents: read
+
 concurrency:
   group: kitchen-production
   cancel-in-progress: false
+
 jobs:
   deploy:
-    if: github.event.inputs.confirm == 'DEPLOY' && github.ref_name == github.event.repository.default_branch
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'DEPLOY' && github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
