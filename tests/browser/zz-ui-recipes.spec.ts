@@ -421,7 +421,8 @@ test("long recipe content remains readable at narrow widths after CSS cleanup", 
     await page.screenshot({ path: info.outputPath(`long-detail-${width}.png`), fullPage: true });
     await page.getByRole("button", { name: "Edit recipe", exact: true }).click();
     const field = page.getByLabel("Description", { exact: true });
-    await expect(field).toHaveValue(description);
+    // Recipe validation intentionally trims surrounding whitespace before storage.
+    await expect(field).toHaveValue(description.trim());
     await expect(field).toHaveCSS("resize", "vertical");
     await expect(page.getByRole("button", { name: "Save changes", exact: true })).toBeVisible();
     await noOverflow(page);
