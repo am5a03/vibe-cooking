@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: ['feat/single-user-cloudflare-foundation']
+    branches: ['claude/setup-nextjs-cloudflare-019m71wRrdmgY5rwo41cCUfa']
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,7 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install (bootstrap a lockfile when none exists)
+      - name: Install dependencies
+        id: install
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - name: Preserve resolved dependency lock for review
@@ -31,12 +32,22 @@ jobs:
           name: dependency-lock
           path: package-lock.json
           if-no-files-found: ignore
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run lint
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run typecheck
+      - name: Test API and migrations
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm test
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
       - name: Validate starter catalogue without writing data
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run catalogue:import
       - name: Build for Workers (no deployment)
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build:worker
       - name: Validate Worker bundle without deploying
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: npx wrangler deploy --dry-run
