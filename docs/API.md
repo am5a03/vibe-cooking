@@ -51,3 +51,10 @@ No bulk destructive import, public write route, user accounts, image fetcher, re
 ## Discovery and recipe variations
 
 See [Discovery and Remix](DISCOVERY-REMIX.md#api) for the authenticated discovery, remix-options and connection-management contracts. Preferences now affect these recommendation endpoints; the paginated recipe library deliberately retains its original unfiltered editing contract.
+
+## Flavour combinations
+
+`/api/flavor-profiles` provides authenticated list/create and custom-profile
+read/update operations. See [Flavour library](FLAVOUR-LIBRARY.md) for the schema,
+ETags, seed migrations and legacy-ID compatibility. Profile descriptions are
+reference guidance, never a substitute for recipe ingredient/exclusion checks.

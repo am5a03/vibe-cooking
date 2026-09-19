@@ -33,9 +33,9 @@ const connect = (db) => db.exec("INSERT INTO kitchen_remixes(id,source_id,target
 
 test('fresh migrations create the declared remix storage and custom guards', (t) => {
   const db = database(t);
-  assert.deepEqual(names, [...beforeRemixes, ...additions]);
+  assert.deepEqual(names, [...beforeRemixes, ...additions, '0006_flavor_profiles.sql', '0007_seed_flavor_profiles.sql']);
   apply(db, names);
-  assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name LIKE 'kitchen_%'").get().n, 9);
+  assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name LIKE 'kitchen_%'").get().n, 10);
   assert.equal(triggers(db).length, 7);
   const info = db.prepare('PRAGMA table_info(kitchen_remixes)').all();
   assert.deepEqual(info.map((column) => column.name), ['id','source_id','target_id','source_revision','target_revision','axis','revision','created_at','updated_at']);
@@ -94,7 +94,7 @@ test('review and immutable-history protections survive both migration paths', (t
 
 test('generated snapshots form one chain and include the remix table after the baseline', () => {
   const journal = JSON.parse(read('meta/_journal.json'));
-  assert.deepEqual(journal.entries.map((entry) => entry.tag), ['0003_drizzle_baseline','0004_recipe_remixes','0005_recipe_remix_guards']);
+  assert.deepEqual(journal.entries.map((entry) => entry.tag), ['0003_drizzle_baseline','0004_recipe_remixes','0005_recipe_remix_guards','0006_flavor_profiles','0007_seed_flavor_profiles']);
   const snapshots = [3,4,5].map((index) => JSON.parse(read(`meta/${String(index).padStart(4, '0')}_snapshot.json`)));
   assert.equal(snapshots[0].tables.kitchen_remixes, undefined);
   assert.equal(snapshots[1].prevId, snapshots[0].id);

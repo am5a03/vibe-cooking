@@ -24,6 +24,7 @@ Workers/OpenNext, D1, Drizzle, and source-owned shadcn/ui components.
 | Components, styles, forms, or confirmations | [UI architecture](docs/UI.md) |
 | API or authentication | [API contract](docs/API.md), [browser access](docs/BROWSER-ACCESS.md), [origin configuration](docs/LOCAL-ORIGIN.md) |
 | Discovery, preferences, or recipe variations | [Discovery and Remix](docs/DISCOVERY-REMIX.md) |
+| Flavour profiles or recipe classifiers | [Flavour library](docs/FLAVOUR-LIBRARY.md) |
 | Dependency changes | [Dependency policy](docs/DEPENDENCIES.md) |
 
 Load only the guides needed for the task. Check the current implementation and

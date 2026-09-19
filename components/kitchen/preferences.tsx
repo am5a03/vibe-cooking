@@ -13,7 +13,7 @@ import { ErrorBox, Field, Loading, useDirty, useKitchen } from "./shared";
 
 export function PreferencesPanel() {
   const requestConfirmation = useConfirm();
-  const { entries, setDirty } = useKitchen();
+  const { entries, setDirty, go } = useKitchen();
   const [value, setValue] = useState<Preferences | null>(null);
   const [original, setOriginal] = useState("");
   const [tag, setTag] = useState<string | null>(null);
@@ -77,6 +77,7 @@ export function PreferencesPanel() {
       <p className="mb-5 break-words text-sm leading-relaxed text-muted-foreground">
         Keep track of the ingredients and portions you prefer.
       </p>
+      <Button type="button" variant="outline" className="mb-5" onClick={() => go("flavours")}>Manage flavour combinations</Button>
       <Notice>
         Discover uses these exclusions and likes when suggesting meals. All recipes remains an
         unfiltered editing library. Recorded ingredient components are checked, but this is not an

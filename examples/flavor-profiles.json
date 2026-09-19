@@ -1,0 +1,906 @@
+[
+  {
+    "id": "ginger-sesame",
+    "profile": {
+      "name": "Ginger–sesame",
+      "description": "Ginger and sesame with a savoury, tangy finish.",
+      "styles": [
+        "chinese"
+      ],
+      "tasteTags": [
+        "savoury",
+        "gingery",
+        "nutty"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Sesame oil",
+          "ingredientId": "sesame-oil"
+        },
+        {
+          "name": "Rice vinegar",
+          "ingredientId": "rice-vinegar"
+        }
+      ],
+      "applications": [
+        "cooked-sauce",
+        "dressing"
+      ],
+      "usage": "Use the recipe’s sauce quantities. Sesame oil is a flavouring; changing this label never replaces your cooking oil or steps."
+    }
+  },
+  {
+    "id": "ginger-spring-onion",
+    "profile": {
+      "name": "Ginger–spring onion",
+      "description": "A ginger-and-spring-onion direction for a fragrant finish.",
+      "styles": [
+        "chinese"
+      ],
+      "tasteTags": [
+        "aromatic",
+        "fresh",
+        "savoury"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Spring onion",
+          "ingredientId": "spring-onion"
+        },
+        {
+          "name": "Light soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Neutral oil",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "A finishing mixture, not a universal marinade. Follow a complete recipe for the oil amount and any heating step."
+    }
+  },
+  {
+    "id": "five-spice-soy",
+    "profile": {
+      "name": "Five-spice–soy",
+      "description": "A warm spice direction anchored by soy and ginger.",
+      "styles": [
+        "chinese"
+      ],
+      "tasteTags": [
+        "warm spice",
+        "savoury"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Five-spice powder",
+          "ingredientId": null
+        },
+        {
+          "name": "Soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Sugar",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "marinade",
+        "cooked-sauce"
+      ],
+      "usage": "Five-spice blends vary. Check the blend and follow a recipe for quantities; start by reviewing the seasoning rather than adding a whole blend blindly."
+    }
+  },
+  {
+    "id": "teriyaki",
+    "profile": {
+      "name": "Teriyaki glaze",
+      "description": "A sweet–savoury soy-based glaze.",
+      "styles": [
+        "japanese"
+      ],
+      "tasteTags": [
+        "sweet",
+        "savoury"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Mirin",
+          "ingredientId": null
+        },
+        {
+          "name": "Sake",
+          "ingredientId": null
+        },
+        {
+          "name": "Sugar",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "glaze"
+      ],
+      "usage": "A cooked glaze with recipe-specific reduction and timing, not a dry seasoning. Selecting it does not add ingredients or change the method."
+    }
+  },
+  {
+    "id": "miso-ginger",
+    "profile": {
+      "name": "Miso–ginger",
+      "description": "Miso and ginger with a tangy, nutty accent.",
+      "styles": [
+        "japanese"
+      ],
+      "tasteTags": [
+        "umami",
+        "gingery",
+        "tangy"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Miso",
+          "ingredientId": null
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Rice vinegar",
+          "ingredientId": "rice-vinegar"
+        },
+        {
+          "name": "Sesame oil",
+          "ingredientId": "sesame-oil"
+        }
+      ],
+      "applications": [
+        "dressing",
+        "marinade"
+      ],
+      "usage": "Miso varies in saltiness and composition. Use a recipe for the dressing or marinade quantities and check product labels."
+    }
+  },
+  {
+    "id": "gochujang-garlic",
+    "profile": {
+      "name": "Gochujang–garlic–sesame",
+      "description": "A spicy fermented-paste direction with garlic and sesame.",
+      "styles": [
+        "korean"
+      ],
+      "tasteTags": [
+        "spicy",
+        "savoury",
+        "sweet"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Gochujang",
+          "ingredientId": null
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Sesame oil",
+          "ingredientId": "sesame-oil"
+        }
+      ],
+      "applications": [
+        "marinade",
+        "cooked-sauce"
+      ],
+      "usage": "Heat and salt vary by product. Follow an authored recipe for dilution, cooking and the amount of paste; this is not an automatic sauce substitution."
+    }
+  },
+  {
+    "id": "soy-garlic-sesame",
+    "profile": {
+      "name": "Soy–garlic–sesame",
+      "description": "Soy and garlic with a sesame finish.",
+      "styles": [
+        "korean"
+      ],
+      "tasteTags": [
+        "savoury",
+        "garlicky",
+        "nutty"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Sesame oil",
+          "ingredientId": "sesame-oil"
+        },
+        {
+          "name": "Spring onion",
+          "ingredientId": "spring-onion"
+        }
+      ],
+      "applications": [
+        "marinade",
+        "finishing-mixture"
+      ],
+      "usage": "Use as a recipe-specific seasoning direction. Marinade handling and any cooking requirements belong to the actual recipe."
+    }
+  },
+  {
+    "id": "tomato-ginger-masala",
+    "profile": {
+      "name": "Tomato–ginger masala",
+      "description": "A tomato-and-aromatic base with layered spices.",
+      "styles": [
+        "indian"
+      ],
+      "tasteTags": [
+        "warm spice",
+        "aromatic",
+        "savoury"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Tomato",
+          "ingredientId": null
+        },
+        {
+          "name": "Onion",
+          "ingredientId": null
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Ground coriander",
+          "ingredientId": null
+        },
+        {
+          "name": "Ground cumin",
+          "ingredientId": "cumin"
+        },
+        {
+          "name": "Turmeric",
+          "ingredientId": null
+        },
+        {
+          "name": "Garam masala",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "cooked-sauce"
+      ],
+      "usage": "The aromatics and spices need an authored cooking sequence. This card is not a ready-made spice ratio or a universal Indian sauce."
+    }
+  },
+  {
+    "id": "coconut-curry",
+    "profile": {
+      "name": "Coconut curry",
+      "description": "A gentle coconut-and-spice direction for a cooked sauce.",
+      "styles": [
+        "indian",
+        "cross-style"
+      ],
+      "tasteTags": [
+        "creamy",
+        "warm spice"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Coconut milk",
+          "ingredientId": null
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Ground cumin",
+          "ingredientId": "cumin"
+        },
+        {
+          "name": "Ground coriander",
+          "ingredientId": null
+        },
+        {
+          "name": "Turmeric",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "cooked-sauce"
+      ],
+      "usage": "This broad legacy profile covers different recipes. Check the actual recipe and curry blend; not all coconut curries share the same paste or ingredient list."
+    }
+  },
+  {
+    "id": "lemon-oregano",
+    "profile": {
+      "name": "Lemon–oregano",
+      "description": "A Greek-inspired citrus-and-herb combination.",
+      "styles": [
+        "mediterranean"
+      ],
+      "tasteTags": [
+        "citrusy",
+        "herby"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Lemon juice",
+          "ingredientId": "lemon-juice"
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        },
+        {
+          "name": "Dried oregano",
+          "ingredientId": null
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "dressing",
+        "marinade"
+      ],
+      "usage": "Use a complete recipe for the acid-to-oil ratio and how it is applied. A dressing and a marinade are not interchangeable instructions."
+    }
+  },
+  {
+    "id": "lemon-tahini",
+    "profile": {
+      "name": "Lemon–tahini",
+      "description": "Sesame richness with lemon and an optional herby finish.",
+      "styles": [
+        "mediterranean",
+        "cross-style"
+      ],
+      "tasteTags": [
+        "nutty",
+        "tangy",
+        "creamy"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Tahini",
+          "ingredientId": "tahini"
+        },
+        {
+          "name": "Lemon juice",
+          "ingredientId": "lemon-juice"
+        },
+        {
+          "name": "Ground cumin",
+          "ingredientId": "cumin"
+        },
+        {
+          "name": "Parsley",
+          "ingredientId": "parsley"
+        }
+      ],
+      "applications": [
+        "dressing",
+        "finishing-mixture"
+      ],
+      "usage": "Tahini-based sauce needs recipe-specific dilution. These are reference ingredients, not a complete ingredient list or allergy assessment."
+    }
+  },
+  {
+    "id": "tomato-herb",
+    "profile": {
+      "name": "Tomato–herb",
+      "description": "A tomato base with familiar herbs and olive oil.",
+      "styles": [
+        "italian",
+        "mediterranean"
+      ],
+      "tasteTags": [
+        "savoury",
+        "herby"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Tomato or passata",
+          "ingredientId": null
+        },
+        {
+          "name": "Dried oregano",
+          "ingredientId": null
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        }
+      ],
+      "applications": [
+        "cooked-sauce"
+      ],
+      "usage": "Follow the recipe for simmering, quantities and any finishing herbs. Existing tomato–herb recipes retain their exact ingredients."
+    }
+  },
+  {
+    "id": "basil-pesto",
+    "profile": {
+      "name": "Basil pesto",
+      "description": "A basil, nut and cheese combination inspired by pesto.",
+      "styles": [
+        "italian"
+      ],
+      "tasteTags": [
+        "herby",
+        "nutty",
+        "rich"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Basil",
+          "ingredientId": null
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Pine nuts",
+          "ingredientId": null
+        },
+        {
+          "name": "Parmesan",
+          "ingredientId": null
+        },
+        {
+          "name": "Pecorino",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "Use a complete pesto recipe for proportions and handling. Substituting nuts or cheese creates a different mixture that needs review."
+    }
+  },
+  {
+    "id": "garlic-parsley",
+    "profile": {
+      "name": "Garlic–parsley (persillade)",
+      "description": "Chopped garlic and parsley as a finishing direction.",
+      "styles": [
+        "french"
+      ],
+      "tasteTags": [
+        "garlicky",
+        "fresh",
+        "herby"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Parsley",
+          "ingredientId": "parsley"
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "The oil and when to add the mixture depend on the dish. This is inspiration for a finishing mixture, not a universal cooked sauce."
+    }
+  },
+  {
+    "id": "mustard-herb",
+    "profile": {
+      "name": "Mustard–herb",
+      "description": "Mustard with citrus and a fresh herb.",
+      "styles": [
+        "french",
+        "mediterranean"
+      ],
+      "tasteTags": [
+        "tangy",
+        "herby"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Dijon mustard",
+          "ingredientId": "dijon"
+        },
+        {
+          "name": "Lemon juice",
+          "ingredientId": "lemon-juice"
+        },
+        {
+          "name": "Dill or parsley",
+          "ingredientId": null
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        }
+      ],
+      "applications": [
+        "dressing",
+        "glaze"
+      ],
+      "usage": "Use your recipe’s chosen herb and quantities. A glaze and a cold dressing require different applications; the recipe remains authoritative."
+    }
+  },
+  {
+    "id": "lemon-dill",
+    "profile": {
+      "name": "Lemon–dill",
+      "description": "A citrus and dill finish.",
+      "styles": [
+        "mediterranean",
+        "french"
+      ],
+      "tasteTags": [
+        "citrusy",
+        "herby",
+        "fresh"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Lemon juice",
+          "ingredientId": "lemon-juice"
+        },
+        {
+          "name": "Fresh dill",
+          "ingredientId": "dill"
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        },
+        {
+          "name": "Black pepper",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "dressing",
+        "finishing-mixture"
+      ],
+      "usage": "Use recipe-specific quantities. The profile does not determine cooking time, protein suitability or storage."
+    }
+  },
+  {
+    "id": "smoky-lime",
+    "profile": {
+      "name": "Smoky–lime",
+      "description": "Warm, smoky spices followed by a lime finish.",
+      "styles": [
+        "cross-style"
+      ],
+      "tasteTags": [
+        "smoky",
+        "tangy",
+        "warm spice"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Smoked paprika",
+          "ingredientId": "smoked-paprika"
+        },
+        {
+          "name": "Ground cumin",
+          "ingredientId": "cumin"
+        },
+        {
+          "name": "Lime juice",
+          "ingredientId": "lime"
+        },
+        {
+          "name": "Parsley or coriander",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "dry-seasoning",
+        "finishing-mixture"
+      ],
+      "usage": "The dry spices and the lime may be added at different times. Follow the recipe; do not treat them as a single ready-made sauce."
+    }
+  },
+  {
+    "id": "peanut-lime",
+    "profile": {
+      "name": "Peanut–lime",
+      "description": "A nutty sauce direction with a bright lime note.",
+      "styles": [
+        "cross-style"
+      ],
+      "tasteTags": [
+        "nutty",
+        "tangy",
+        "creamy"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Peanut butter",
+          "ingredientId": "peanut-butter"
+        },
+        {
+          "name": "Lime juice",
+          "ingredientId": "lime"
+        },
+        {
+          "name": "Soy sauce",
+          "ingredientId": "soy-sauce"
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        }
+      ],
+      "applications": [
+        "dressing",
+        "cooked-sauce"
+      ],
+      "usage": "Review dilution, salt and heating in the actual recipe. Peanut butter and soy sauce compositions vary by product."
+    }
+  },
+  {
+    "id": "coconut-ginger",
+    "profile": {
+      "name": "Coconut–ginger",
+      "description": "Coconut richness with ginger and citrus.",
+      "styles": [
+        "cross-style"
+      ],
+      "tasteTags": [
+        "creamy",
+        "gingery"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Coconut milk",
+          "ingredientId": null
+        },
+        {
+          "name": "Fresh ginger",
+          "ingredientId": "ginger"
+        },
+        {
+          "name": "Lime juice",
+          "ingredientId": "lime"
+        }
+      ],
+      "applications": [
+        "cooked-sauce"
+      ],
+      "usage": "Choose a complete recipe for quantities and any additional seasonings. These reference ingredients do not create a curry by themselves."
+    }
+  },
+  {
+    "id": "apple-cinnamon",
+    "profile": {
+      "name": "Apple–cinnamon",
+      "description": "An apple-and-cinnamon direction for breakfast.",
+      "styles": [
+        "sweet-breakfast"
+      ],
+      "tasteTags": [
+        "fruity",
+        "warm spice"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Apple",
+          "ingredientId": "apple"
+        },
+        {
+          "name": "Ground cinnamon",
+          "ingredientId": "cinnamon"
+        },
+        {
+          "name": "Walnuts",
+          "ingredientId": "walnuts"
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "Prepare fruit and any topping according to the breakfast recipe. Nuts are a suggestion here; inspect the actual ingredients for exclusions."
+    }
+  },
+  {
+    "id": "cocoa-banana",
+    "profile": {
+      "name": "Cocoa–banana",
+      "description": "Chocolate and banana with an optional nutty accent.",
+      "styles": [
+        "sweet-breakfast"
+      ],
+      "tasteTags": [
+        "chocolatey",
+        "fruity"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Cocoa powder",
+          "ingredientId": "cocoa"
+        },
+        {
+          "name": "Banana",
+          "ingredientId": "banana"
+        },
+        {
+          "name": "Peanut butter",
+          "ingredientId": "peanut-butter"
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "Use the breakfast recipe’s quantities. This profile does not add peanut butter to a recipe that does not list it."
+    }
+  },
+  {
+    "id": "berry-vanilla",
+    "profile": {
+      "name": "Berry–vanilla",
+      "description": "Berries and vanilla for a sweet breakfast direction.",
+      "styles": [
+        "sweet-breakfast"
+      ],
+      "tasteTags": [
+        "fruity",
+        "sweet"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Berries",
+          "ingredientId": "berries"
+        },
+        {
+          "name": "Vanilla extract",
+          "ingredientId": "vanilla"
+        },
+        {
+          "name": "Plain yoghurt",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "finishing-mixture"
+      ],
+      "usage": "Use the actual recipe for dairy or plant-based ingredients and quantities. This is descriptive guidance, not a substitution rule."
+    }
+  },
+  {
+    "id": "lemon-herb",
+    "profile": {
+      "name": "Lemon–herb",
+      "description": "A flexible lemon and fresh-herb direction.",
+      "styles": [
+        "mediterranean",
+        "cross-style"
+      ],
+      "tasteTags": [
+        "citrusy",
+        "herby"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Lemon juice",
+          "ingredientId": "lemon-juice"
+        },
+        {
+          "name": "Parsley",
+          "ingredientId": "parsley"
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        }
+      ],
+      "applications": [
+        "dressing",
+        "marinade"
+      ],
+      "usage": "Keep the recipe’s specified herbs, ratios and method. A broad flavour label does not establish compatibility with another recipe."
+    }
+  },
+  {
+    "id": "tomato-basil",
+    "profile": {
+      "name": "Tomato–basil",
+      "description": "Tomato with basil and olive oil.",
+      "styles": [
+        "italian"
+      ],
+      "tasteTags": [
+        "herby",
+        "savoury",
+        "fresh"
+      ],
+      "keyIngredients": [
+        {
+          "name": "Tomato",
+          "ingredientId": null
+        },
+        {
+          "name": "Basil",
+          "ingredientId": null
+        },
+        {
+          "name": "Garlic",
+          "ingredientId": null
+        },
+        {
+          "name": "Olive oil",
+          "ingredientId": "olive-oil"
+        }
+      ],
+      "applications": [
+        "cooked-sauce",
+        "finishing-mixture"
+      ],
+      "usage": "A fresh topping and a cooked tomato sauce use different preparations. Follow the recipe’s own quantities and steps."
+    }
+  }
+]

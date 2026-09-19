@@ -9,10 +9,13 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api, errorText, label, type Preferences } from "../../lib/kitchen/client";
 import type { DiscoveryConstraints, DiscoveryResult } from "../../lib/kitchen/exploration-client";
 import { Notice } from "./notice";
+import { useFlavors } from "./flavor-context";
+import { flavorName } from "../../lib/kitchen/flavors";
 import { RecipeCard } from "./recipe-card";
 import { ErrorBox, Field, Loading, useKitchen } from "./shared";
 
 export function Discovery() {
+  const flavors = useFlavors();
   const { entries, go, discovery, setDiscovery } = useKitchen();
   const [filters, setFilters] = useState<DiscoveryConstraints>(
     discovery ?? { mode: "dinner", portions: 3, maxMinutes: null, requiredIngredient: null },
@@ -296,7 +299,7 @@ export function Discovery() {
                     recipe={snapshot.recipe}
                     serving={serving}
                     onOpen={() => open(snapshot.id)}
-                    eyebrow={`${label(snapshot.recipe.flavor)} · ${label(snapshot.recipe.method)}`}
+                    eyebrow={`${flavorName(snapshot.recipe.flavor, flavors.entries)} · ${label(snapshot.recipe.method)}`}
                     actionLabel="Explore this dish"
                     reason={`${liked.length ? `Includes ingredients you like: ${liked.map(name).join(", ")}.` : "A match for your current choices."}${repeated ? " Shown recently." : ""}`}
                   />
