@@ -115,3 +115,12 @@ CI runs these checks, validates the Drizzle journal and schema/snapshot parity, 
 Discovery and reviewed recipe remixes are connected to D1. Shared prep sessions, unrestricted recipe generation, images and public accounts remain deferred. No production resources or migrations are created automatically by this branch.
 
 See the [API contract](docs/API.md), [browser access contract](docs/BROWSER-ACCESS.md), [public-origin setup](docs/LOCAL-ORIGIN.md), and [previous backend setup notes](docs/BACKEND-FOUNDATION.md) for migration/export/deployment details. This README supersedes the old notes about the placeholder homepage.
+
+## Public recipe covers
+
+Edit a recipe and use **Recipe cover → Choose a cover**. Twelve illustrated seed
+covers are bundled as public static files; your own public WebP/PNG/JPEG files also
+work. No R2, new secret or migration is needed. A preview-first `covers:attach`
+command can attach missing covers to already-imported `PK26-*` personal recipes,
+without overwriting edits. See [recipe covers](docs/RECIPE-COVERS.md) for the local
+commands, production ordering and saved-version behaviour.

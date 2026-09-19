@@ -1,0 +1,146 @@
+[
+  {
+    "recipeId": "PK26-D01",
+    "title": "Ginger–sesame tofu, broccoli & carrot bowls",
+    "image": {
+      "src": "/images/recipes/ginger-sesame-tofu-v1.svg",
+      "alt": "Ginger–sesame tofu, broccoli & carrot bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D02",
+    "title": "Peanut–lime tofu, broccoli & carrot bowls",
+    "image": {
+      "src": "/images/recipes/peanut-lime-tofu-v1.svg",
+      "alt": "Peanut–lime tofu, broccoli & carrot bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D03",
+    "title": "Ginger–sesame chicken, broccoli & carrot bowls",
+    "image": {
+      "src": "/images/recipes/ginger-sesame-chicken-v1.svg",
+      "alt": "Ginger–sesame chicken, broccoli & carrot bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D04",
+    "title": "Roasted ginger–sesame tofu rice bowls",
+    "image": {
+      "src": "/images/recipes/roasted-ginger-tofu-v1.svg",
+      "alt": "Roasted ginger–sesame tofu rice bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D05",
+    "title": "Mustard–dill salmon, potatoes & greens",
+    "image": {
+      "src": "/images/recipes/mustard-dill-salmon-v1.svg",
+      "alt": "Mustard–dill salmon, potatoes & greens — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D06",
+    "title": "Smoky–lime salmon, potatoes & greens",
+    "image": {
+      "src": "/images/recipes/smoky-lime-salmon-v1.svg",
+      "alt": "Smoky–lime salmon, potatoes & greens — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D07",
+    "title": "Tomato–herb lentil & spinach pasta",
+    "image": {
+      "src": "/images/recipes/tomato-lentil-pasta-v1.svg",
+      "alt": "Tomato–herb lentil & spinach pasta — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-D08",
+    "title": "Coconut–ginger lentil & spinach curry",
+    "image": {
+      "src": "/images/recipes/coconut-lentil-curry-v1.svg",
+      "alt": "Coconut–ginger lentil & spinach curry — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-B01",
+    "title": "Mustard–herb spinach eggs on toast",
+    "image": {
+      "src": "/images/recipes/spinach-eggs-toast-v1.svg",
+      "alt": "Mustard–herb spinach eggs on toast — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-B02",
+    "title": "Mustard–herb spinach breakfast wraps",
+    "image": {
+      "src": "/images/recipes/spinach-egg-wraps-v1.svg",
+      "alt": "Mustard–herb spinach breakfast wraps — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-B03",
+    "title": "Apple–cinnamon yoghurt crunch bowls",
+    "image": {
+      "src": "/images/recipes/apple-cinnamon-yoghurt-v1.svg",
+      "alt": "Apple–cinnamon yoghurt crunch bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  },
+  {
+    "recipeId": "PK26-B04",
+    "title": "Cocoa–banana peanut yoghurt bowls",
+    "image": {
+      "src": "/images/recipes/cocoa-banana-yoghurt-v1.svg",
+      "alt": "Cocoa–banana peanut yoghurt bowls — illustrated serving suggestion",
+      "width": 1200,
+      "height": 900,
+      "kind": "illustration",
+      "credit": "Vibe Cooking"
+    }
+  }
+]

@@ -1,10 +1,15 @@
+"use client";
+import Image from 'next/image';
+import { useState } from 'react';
+import { isPublicImagePath } from '@/lib/kitchen/images';
+import type { RecipeImage } from '@/lib/kitchen/types';
 import { FlavorName } from './flavor-context';
 import { label, type RecipeDocument } from "@/lib/kitchen/client";
 import { cn } from "@/lib/utils";
 import { Bean, EggFried, Fish, Leaf, Soup, Wheat } from "lucide-react";
 
 /** Product illustration with self-contained, responsive utilities. */
-export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; large?: boolean }) {
+function PlaceholderArt({ recipe, large = false }: { recipe: RecipeDocument; large?: boolean }) {
   const Icon =
     recipe.main === "salmon"
       ? Fish
@@ -47,4 +52,34 @@ export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; lar
       </span>
     </div>
   );
+}
+
+
+/** A failed source resets when src changes; no failed-image state leaks to another recipe. */
+function Cover({ recipe, image, large }: { recipe: RecipeDocument; image: RecipeImage; large: boolean }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <PlaceholderArt recipe={recipe} large={large} />;
+  return (
+    <figure data-kitchen-recipe-cover className={cn("relative m-0 shrink-0 overflow-hidden bg-muted", large && "rounded-t-xl")}>
+      <div className="relative aspect-[4/3] w-full">
+        <Image src={image.src} alt={image.alt} width={image.width} height={image.height}
+          unoptimized loading={large ? "eager" : "lazy"} onError={() => setFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover" />
+        <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] rounded bg-card/95 px-2 py-1 text-[10px] uppercase tracking-wider text-foreground">
+          {label(recipe.method)} · <FlavorName id={recipe.flavor} />
+        </span>
+      </div>
+      {(image.kind === "illustration" || image.credit) && (
+        <figcaption className="break-words bg-card px-3 py-2 text-[10px] leading-relaxed text-muted-foreground">
+          {image.kind === "illustration" ? "Illustrated serving suggestion" : "Photo"}
+          {image.credit ? ` · ${image.credit}` : ""}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; large?: boolean }) {
+  return recipe.image && isPublicImagePath(recipe.image.src)
+    ? <Cover key={recipe.image.src} recipe={recipe} image={recipe.image} large={large} />
+    : <PlaceholderArt recipe={recipe} large={large} />;
 }

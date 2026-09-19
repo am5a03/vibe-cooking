@@ -185,3 +185,12 @@ Input, Field and Checkbox primitives. Flavour forms are reusable fieldsets, not
 nested forms. Library state comes from protected APIs; previews do not mutate
 recipe ingredients. The existing session/confirmation policy covers inline and
 library drafts. See [Flavour library](FLAVOUR-LIBRARY.md) for the feature contract.
+
+## Optional public covers
+
+`DishArt` now chooses an explicitly supplied recipe cover or its original artwork.
+It never infers an image from a recipe ID or current catalogue, preserving saved
+snapshots. `CoverPicker` is controlled by the existing editor draft. It introduces
+no upload, overlay or independent persistence. Image files are public; errors fall
+back to the old artwork, and changing the source retries. See
+[recipe covers](RECIPE-COVERS.md) for metadata and attachment semantics.
