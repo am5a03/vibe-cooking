@@ -1,4 +1,5 @@
 "use client";
+import { CoverPicker } from "./cover-picker";
 import { useConfirm } from "./confirmation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -341,6 +342,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
                 ingredients, quantities and steps change only when you edit them.
               </p>
             </Card>
+            <CoverPicker recipe={doc} onChange={image => update("image", image)} disabled={busy || ingredientBusy}/>
             <Collapsible
               className="mb-6 min-w-0 gap-0 rounded-xl bg-card p-5 shadow-sm sm:p-7"
               defaultOpen={entries.length === 0}

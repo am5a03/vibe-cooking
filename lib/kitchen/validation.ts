@@ -1,5 +1,6 @@
+import { isPublicImagePath } from './images.ts';
 import { requireThat } from './errors.ts';
-import type { Ingredient, IngredientLine, Note, Preferences, RecipeDocument, Role, Serving } from './types.ts';
+import type { Ingredient, IngredientLine, Note, Preferences, RecipeDocument, RecipeImage, Role, Serving } from './types.ts';
 
 export function record(value: unknown, label = 'body'): Record<string, unknown> {
   requireThat(typeof value === 'object' && value !== null && !Array.isArray(value), `${label} must be an object.`);
@@ -74,9 +75,19 @@ function serving(value: unknown): Serving {
     }),
   };
 }
+export function image(value: unknown): RecipeImage {
+  const entry = record(value, 'image');
+  keys(entry, ['src', 'alt', 'width', 'height', 'kind', 'credit'], 'image');
+  const src = text(entry.src, 'image.src', 240);
+  requireThat(isPublicImagePath(src), 'Choose a public image under /images/recipes/ (SVG, WebP, PNG or JPEG). External URLs, queries and traversal are not supported.');
+  return { src, alt: text(entry.alt, 'image.alt', 300),
+    width: integer(entry.width, 'image.width', 1, 8192), height: integer(entry.height, 'image.height', 1, 8192),
+    kind: choice(entry.kind, ['illustration', 'photo'], 'image.kind'),
+    credit: text(entry.credit, 'image.credit', 300, true) };
+}
 export function recipe(value: unknown): RecipeDocument {
   const entry = record(value);
-  keys(entry, ['schemaVersion', 'title', 'description', 'mode', 'main', 'flavor', 'method', 'status', 'reviewStatus', 'prep', 'prepNote', 'rationale', 'safetyNotes', 'storageNote', 'source', 'servings'], 'recipe');
+  keys(entry, ['schemaVersion', 'title', 'description', 'mode', 'main', 'flavor', 'method', 'status', 'reviewStatus', 'prep', 'prepNote', 'rationale', 'safetyNotes', 'storageNote', 'source', 'servings', 'image'], 'recipe');
   requireThat(entry.schemaVersion === 1, 'schemaVersion must be 1.');
   const servings = list(entry.servings, 'servings', 12, 1).map(serving);
   requireThat(new Set(servings.map((item) => item.portions)).size === servings.length, 'Serving portion counts must be unique.');
@@ -86,6 +97,7 @@ export function recipe(value: unknown): RecipeDocument {
   requireThat(servings.every((item) => item.ingredients.some((line) => line.ingredientId === main && line.role === 'main')), 'Every serving must include the main ingredient with role main.');
   requireThat(entry.reviewStatus === 'draft', 'This foundation only accepts reviewStatus=draft; it does not certify kitchen testing.');
   return {
+    ...(entry.image === undefined ? {} : { image: image(entry.image) }),
     schemaVersion: 1, title: text(entry.title, 'title', 180), description: text(entry.description, 'description', 1000, true),
     mode: choice(entry.mode, ['breakfast', 'dinner'], 'mode'), main, flavor: id(entry.flavor, 'flavor'), method: id(entry.method, 'method'),
     status: choice(entry.status, ['active', 'archived'], 'status'), reviewStatus: 'draft',
