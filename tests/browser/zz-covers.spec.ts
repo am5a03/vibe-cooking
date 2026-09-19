@@ -43,7 +43,7 @@ test('choose, save and reload a cover; ingredients and saved image snapshots rem
  await page.reload();await expect(page.locator('[data-kitchen-recipe-cover] img')).toBeVisible();
  const after=await get(request,id);expect(after.recipe.servings).toEqual(before.recipe.servings);expect(after.recipe.image).toEqual(covers[0].image);
  await page.getByRole('button',{name:'Save this version',exact:true}).click();
- await expect(page.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();
+ await expect(page.getByText('Saved this exact version and portion size to My kitchen.', {exact:true})).toBeVisible();
  for(const width of [320,390,1360]){
   await page.setViewportSize({width,height:960});await page.screenshot({path:`test-results/cover-detail-${width}.png`,fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBeTruthy();
@@ -79,6 +79,7 @@ test('failed stale save and session expiry retain a chosen cover without silentl
  await expect(page.getByLabel('Choose a cover')).toBeHidden();
  await page.getByLabel('Private kitchen key').fill(process.env.KITCHEN_TEST_TOKEN as string);
  await page.getByRole('button',{name:'Unlock my kitchen',exact:true}).click();
+ await expect(page.getByLabel('Choose a cover')).toBeVisible();
  await expect(page.getByLabel('Choose a cover')).toHaveValue(covers[2].image.src);
  expect((await get(request,id)).recipe.image).toBeUndefined();
 });
