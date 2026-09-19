@@ -4,7 +4,8 @@ import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 import { screenSession } from '../helpers/browser-session';
 import type { IngredientEntry, RecipeDocument, Snapshot } from '../../lib/kitchen/client';
-import covers from '../../lib/kitchen/seed-covers.json';
+import type { RecipeImage } from '../../lib/kitchen/types';
+const covers = JSON.parse(readFileSync(new URL('../../lib/kitchen/seed-covers.json', import.meta.url), 'utf8')) as {recipeId:string; title:string; image:RecipeImage}[];
 const pack = JSON.parse(readFileSync(new URL('../../examples/personal-kitchen-seed-v1.json', import.meta.url),'utf8')) as {ingredients:IngredientEntry[];recipes:{id:string;recipe:RecipeDocument}[]};
 const auth = () => ({Authorization:`Bearer ${process.env.KITCHEN_TEST_TOKEN}`});
 test.beforeAll(async ({request}) => {
