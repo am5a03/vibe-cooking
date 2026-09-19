@@ -155,3 +155,16 @@ export const remixes = sqliteTable(
     foreignKey({ columns: [t.targetId, t.targetRevision], foreignColumns: [recipeHistory.recipeId, recipeHistory.revision] }),
   ],
 );
+
+// Descriptive flavour guidance only. Recipes retain their existing string IDs and exact ingredient/instruction documents.
+export const flavorProfiles = sqliteTable('kitchen_flavor_profiles', {
+  id: text().primaryKey().notNull(),
+  document: text().notNull(),
+  origin: text({ enum: ['builtin', 'custom'] }).notNull(),
+  revision: integer().notNull().default(1),
+  createdAt: timestamp(), updatedAt: timestamp(),
+}, (t) => [
+  check('flavor_profile_json', sql`json_valid(${t.document})`),
+  check('flavor_profile_origin', sql`${t.origin} IN ('builtin','custom')`),
+  check('flavor_profile_revision', sql`${t.revision} > 0`),
+]);

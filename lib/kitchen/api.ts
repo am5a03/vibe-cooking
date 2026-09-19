@@ -1,3 +1,4 @@
+import { flavorRoute } from './flavor-api.ts';
 import { exploreRoute } from './explore-api.ts';
 import { and, eq, gt } from 'drizzle-orm';
 import { getDb } from '../../db/index.ts';
@@ -37,6 +38,9 @@ export async function handle(request: Request, env: KitchenEnv): Promise<Respons
       V.keys(input, allowed, 'body');
       return input;
     };
+
+    const flavor = await flavorRoute(request, db);
+    if (flavor) return respond(flavor.data, flavor.status, flavor.tag);
 
     const exploration = await exploreRoute(request, db);
     if (exploration) return respond(exploration.data, exploration.status, exploration.tag);

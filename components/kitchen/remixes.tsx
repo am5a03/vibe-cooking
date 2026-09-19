@@ -1,4 +1,5 @@
 "use client";
+import { FlavorName } from "./flavor-context";
 import { useConfirm } from "./confirmation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,10 +84,10 @@ export function Comparison({
           <div key={axis}>
             <strong>{axisName(axis, source.recipe.mode === "breakfast")}</strong>
             <span>
-              {label(source.recipe[axis])}
+              {axis === "flavor" ? <FlavorName id={source.recipe.flavor}/> : label(source.recipe[axis])}
               {source.recipe[axis] === target.recipe[axis]
                 ? " · kept"
-                : ` → ${label(target.recipe[axis])}`}
+                : <> → {axis === "flavor" ? <FlavorName id={target.recipe.flavor}/> : label(target.recipe[axis])}</>}
             </span>
           </div>
         ))}

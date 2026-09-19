@@ -28,6 +28,7 @@ import {
 } from "../../lib/kitchen/editor-model";
 import type { IngredientLine } from "../../lib/kitchen/types";
 import { recipe as validateRecipe } from "../../lib/kitchen/validation";
+import { FlavorPicker, MethodPicker } from "./flavor-controls";
 import { Notice } from "./notice";
 import { ErrorBox, Field, Loading, useDirty, useKitchen } from "./shared";
 
@@ -44,6 +45,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
   const [tag, setTag] = useState<string | null>(null);
   const [profileIndex, setProfileIndex] = useState(0);
   const [reviewNeeded, setReviewNeeded] = useState(false);
+  const [flavorDirty, setFlavorDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
@@ -52,7 +54,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
   const [newComponents, setNewComponents] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [ingredientBusy, setIngredientBusy] = useState(false);
-  const dirty = doc !== null && JSON.stringify(doc) !== original;
+  const dirty = flavorDirty || (doc !== null && JSON.stringify(doc) !== original);
   const request = useMemo(() => ({ mode, id, attempt: retry }), [mode, id, retry]);
   useDirty(dirty);
   useEffect(() => {
@@ -111,7 +113,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
   }
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (!doc || reviewNeeded || busy || ingredientBusy) return;
+    if (!doc || reviewNeeded || busy || ingredientBusy || flavorDirty) return;
     setBusy(true);
     setError("");
     try {
@@ -275,6 +277,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
         !error && <Loading label="Loading your recipe draft…" />
       ) : (
         <form onSubmit={save}>
+          {flavorDirty && <Notice>Save or cancel the flavour-combination draft before saving this recipe.</Notice>}
           <fieldset disabled={busy || ingredientBusy} className="m-0 min-w-0 border-0 p-0">
             <Card className="mb-6 min-w-0 gap-0 rounded-xl bg-card p-5 shadow-sm sm:p-7">
               <span className="text-[10px] font-bold uppercase tracking-[.17em] text-muted-foreground">
@@ -329,32 +332,13 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
                     ))}
                   </NativeSelect>
                 </Field>
-                <Field label="Flavour profile ID">
-                  <Input
-                    required
-                    pattern="[A-Za-z0-9][A-Za-z0-9_-]*"
-                    maxLength={80}
-                    value={doc.flavor}
-                    onChange={(e) => update("flavor", e.target.value)}
-                    placeholder="ginger-sesame"
-                    className="h-11 min-w-0 bg-card md:h-10"
-                  />
-                </Field>
-                <Field label={doc.mode === "breakfast" ? "Format ID" : "Technique ID"}>
-                  <Input
-                    required
-                    pattern="[A-Za-z0-9][A-Za-z0-9_-]*"
-                    maxLength={80}
-                    value={doc.method}
-                    onChange={(e) => update("method", e.target.value)}
-                    placeholder={doc.mode === "breakfast" ? "bowl" : "stir-fry"}
-                    className="h-11 min-w-0 bg-card md:h-10"
-                  />
-                </Field>
+                <MethodPicker mode={doc.mode} value={doc.method} onChange={value => update("method", value)} disabled={busy || ingredientBusy}/>
+                <FlavorPicker value={doc.flavor} onChange={value => update("flavor", value)} disabled={busy || ingredientBusy} onDraftDirty={setFlavorDirty}/>
+
               </div>
               <p className="mb-5 text-xs leading-relaxed text-muted-foreground">
-                Use short labels such as ginger-sesame, roast, or wrap. These describe the recipe;
-                they do not create automatic remixes.
+                Choose readable names for flavour and cooking style. These describe the recipe;
+                ingredients, quantities and steps change only when you edit them.
               </p>
             </Card>
             <Collapsible
@@ -874,7 +858,7 @@ export function RecipeEditor({ mode, id }: { mode: "new" | "edit" | "duplicate";
                 type="submit"
                 className="h-auto min-h-11 max-w-full whitespace-normal gap-2 text-[13px] font-semibold"
                 disabled={
-                  busy || ingredientBusy || reviewNeeded || (mode === "edit" && (!dirty || !tag))
+                  busy || ingredientBusy || reviewNeeded || flavorDirty || (mode === "edit" && (!dirty || !tag))
                 }
                 variant="default"
               >

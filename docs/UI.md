@@ -177,3 +177,11 @@ Chromium tests is not exhaustive cross-browser or assistive-technology certifica
 References: [shadcn theming](https://ui.shadcn.com/docs/theming),
 [components configuration](https://ui.shadcn.com/docs/components-json), and
 [Tailwind custom styles/layers](https://tailwindcss.com/docs/adding-custom-styles).
+
+## Flavour library
+
+The editor's style/profile and technique/format selectors use existing NativeSelect,
+Input, Field and Checkbox primitives. Flavour forms are reusable fieldsets, not
+nested forms. Library state comes from protected APIs; previews do not mutate
+recipe ingredients. The existing session/confirmation policy covers inline and
+library drafts. See [Flavour library](FLAVOUR-LIBRARY.md) for the feature contract.

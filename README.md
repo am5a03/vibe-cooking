@@ -9,6 +9,20 @@ Detailed workflow, testing, and database instructions live in `docs/agents/` and
 link to the existing product contracts. `CLAUDE.md` is a symlink to `AGENTS.md`,
 keeping the instructions shared rather than duplicated.
 
+## Flavour combinations
+
+The recipe editor now offers a searchable, style-filtered flavour selector and
+readable cooking-technique/breakfast-format choices instead of technical ID inputs.
+Preview 24 named combinations, create your own inline, or open **Preferences →
+Manage flavour combinations**. Existing recipe IDs, ingredients and instructions
+are preserved; selecting a profile never automatically transforms a recipe.
+
+The additive `0006`/`0007` migrations create and seed only the flavour library.
+Apply reviewed local or remote migrations for the intended instance before using
+this version; no separate recipe import or new environment setting is needed.
+See [Flavour library](docs/FLAVOUR-LIBRARY.md) for compatibility, upgrade ordering,
+custom-profile management and the API contract.
+
 ## UI architecture
 
 The interface uses source-owned shadcn/ui New York/Radix components with Tailwind 4

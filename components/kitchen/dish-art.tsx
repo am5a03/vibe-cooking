@@ -1,3 +1,4 @@
+import { FlavorName } from './flavor-context';
 import { label, type RecipeDocument } from "@/lib/kitchen/client";
 import { cn } from "@/lib/utils";
 import { Bean, EggFried, Fish, Leaf, Soup, Wheat } from "lucide-react";
@@ -42,7 +43,7 @@ export function DishArt({ recipe, large = false }: { recipe: RecipeDocument; lar
         />
       </div>
       <span className="absolute bottom-[13px] left-[18px] text-[10px] uppercase tracking-[.15em] text-[#627458]">
-        {label(recipe.flavor)}
+        {<FlavorName id={recipe.flavor}/>}
       </span>
     </div>
   );
