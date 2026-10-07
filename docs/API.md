@@ -58,3 +58,12 @@ See [Discovery and Remix](DISCOVERY-REMIX.md#api) for the authenticated discover
 read/update operations. See [Flavour library](FLAVOUR-LIBRARY.md) for the schema,
 ETags, seed migrations and legacy-ID compatibility. Profile descriptions are
 reference guidance, never a substitute for recipe ingredient/exclusion checks.
+
+## Optional cover metadata
+
+Recipe documents can include optional `image: {src, alt, width, height, kind,
+credit}`. `kind` is `photo` or `illustration`. `src` is a plain same-origin public
+path under `/images/recipes/`, not an arbitrary URL; see [covers](RECIPE-COVERS.md).
+Omit `image` to remove it. The existing PUT/ETag/history/favourite semantics apply;
+there is no media API, upload endpoint or database migration. Old recipe documents
+without images and the add-only importer retain their previous behaviour.

@@ -27,7 +27,8 @@
     "cf:typegen": "wrangler types --env-interface CloudflareEnv worker-configuration.d.ts",
     "db:generate": "drizzle-kit generate",
     "db:generate:custom": "drizzle-kit generate --custom",
-    "db:migrations:check": "drizzle-kit check && node scripts/check-schema-drift.mjs"
+    "db:migrations:check": "drizzle-kit check && node scripts/check-schema-drift.mjs",
+    "covers:attach": "node --import tsx scripts/attach-seed-images.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

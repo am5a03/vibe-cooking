@@ -9,7 +9,12 @@ export interface Serving {
   equipment: string[]; capacity: string; batches: number; trays: number;
   ingredients: IngredientLine[]; steps: { title: string; instruction: string }[];
 }
+export interface RecipeImage {
+  src: string; alt: string; width: number; height: number;
+  kind: 'illustration' | 'photo'; credit: string;
+}
 export interface RecipeDocument {
+  image?: RecipeImage;
   schemaVersion: 1; title: string; description: string;
   mode: 'breakfast' | 'dinner'; main: string; flavor: string; method: string;
   status: 'active' | 'archived'; reviewStatus: 'draft';

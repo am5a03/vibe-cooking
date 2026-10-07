@@ -9,7 +9,8 @@ import { spawnSync } from 'node:child_process';
 // Keep new feature workflows isolated instead of weakening limits or faking cookies.
 const specs = readdirSync(resolve('tests/browser')).filter((name) => name.endsWith('.spec.ts')).sort();
 const cohorts = [
-  { name: 'existing-kitchen', files: specs.filter((name) => name !== 'zz-flavors.spec.ts') },
+  { name: 'existing-kitchen', files: specs.filter((name) => !['zz-flavors.spec.ts', 'zz-covers.spec.ts'].includes(name)) },
+  { name: 'public-covers', files: specs.filter((name) => name === 'zz-covers.spec.ts') },
   { name: 'flavour-library', files: specs.filter((name) => name === 'zz-flavors.spec.ts') },
 ];
 let status = 0;
